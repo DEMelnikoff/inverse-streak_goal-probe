@@ -385,15 +385,13 @@ var exp = (function() {
             questions: [
                 {
                     prompt: `Which of the following statements best desicribes the goal you had in mind while playing the Tile Game?`,
-                    name: `defineFlow`,
+                    name: `goalRep`,
                     options: [`"Activate every single tile I see".`, `"Activate at least 1 of every 5 tiles I see."`, `"Build winning streaks by activing as many tiles in a row as possible.`],
                     requires: true,
                     horizontal: false,
                 }],
             on_finish: (data) => {
-                const correctAnswers = [`It means that the game captured my attention and sucked me in.`];
-                const totalErrors = dmPsych.getTotalErrors(data, correctAnswers);
-                data.totalErrors = totalErrors;
+                dmPsych.saveSurveyData(data);
             }
         };
 
