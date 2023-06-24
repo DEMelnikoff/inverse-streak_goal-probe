@@ -384,9 +384,13 @@ var exp = (function() {
             type: jsPsychSurveyMultiChoice,
             questions: [
                 {
-                    prompt: `Which of the following statements best desicribes the goal you had in mind while playing the Tile Game?`,
+                    prompt: `<p>When playing the Tile Game, different people set different goals for themselves.
+                    <br>For example, some people set a goal to win as many rounds as possible. Other people set<br>
+                    a goal to build "winning streaks" by activing as many tiles in a row as possible.
+                    <br>What goal did <i>you</i> set for <i>your</i>self?</p>
+                    <p><strong>Please select the statement below that best desicribes the goal you set for yourself while playing the Tile Game.</strong></p>`,
                     name: `goalRep`,
-                    options: [`"Activate every single tile I see".`, `"Activate at least 1 of every 5 tiles I see."`, `"Build winning streaks by activing as many tiles in a row as possible.`],
+                    options: [`"Activate as many tiles as possible".`, `"For each round, activate a tile before my five chances are up."`, `"Build winning streaks by activing as many tiles in a row as possible.`],
                     requires: true,
                     horizontal: false,
                 }],
