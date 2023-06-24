@@ -384,11 +384,10 @@ var exp = (function() {
             type: jsPsychSurveyMultiChoice,
             questions: [
                 {
-                    prompt: `<p>When playing the Tile Game, different people set different goals for themselves.
-                    <br>For example, some people set a goal to win as many rounds as possible. Other people set<br>
-                    a goal to build "winning streaks" by activing as many tiles in a row as possible.
-                    <br>What goal did <i>you</i> set for <i>your</i>self?</p>
-                    <p><strong>Please select the statement below that best desicribes the goal you set for yourself while playing the Tile Game.</strong></p>`,
+                    prompt: `<div style="width:850px"><p>When playing the Tile Game, different people set different goals for themselves.
+                    For example, some people set a goal to win as many rounds as possible. Other people set a goal to build "winning streaks" 
+                    by activing as many tiles in a row as possible. These are just some of the many different goals people set for themselves.</p>
+                    <p><strong>What goal did <i>you</i> set for <i>your</i>self? Please select the statement below that best describes the goal you set for yourself during the Tile Game.</strong></p></div>`,
                     name: `goalRep`,
                     options: [`"Activate as many tiles as possible".`, `"For each round, activate a tile before my five chances are up."`, `"Build winning streaks by activing as many tiles in a row as possible.`],
                     requires: true,
