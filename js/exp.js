@@ -188,7 +188,7 @@ var exp = (function() {
                     prompt: `What does it mean for a game to be immersive and engaging?`,
                     name: `defineFlow`,
                     options: [`It means that I enjoyed the game.`, `It means that I won a lot of money by playing the game.`, `It means that the game captured my attention and sucked me in.`],
-                    requires: true,
+                    required: true,
                     horizontal: false,
                 }],
             on_finish: (data) => {
@@ -384,13 +384,14 @@ var exp = (function() {
             type: jsPsychSurveyMultiChoice,
             questions: [
                 {
-                    prompt: `<div style="width:850px"><p>When playing the Tile Game, different people set different goals for themselves.
-                    For example, some people set a goal to win as many rounds as possible. Other people set a goal to build "winning streaks" 
-                    by activing as many tiles in a row as possible. These are just some of the many different goals people set for themselves.</p>
-                    <p><strong>What goal did <i>you</i> set for <i>your</i>self? Please select the statement below that best describes the goal you set for yourself during the Tile Game.</strong></p></div>`,
+                    prompt: `<div style="width:850px"><p>When playing the Tile Game, different people think about their task in different ways.
+                    For example, some people might trying to win as many rounds as possible. 
+                    Other people might try to build "streaks" by activating as many tiles in a row as possible.
+                    These are just some of the ways people might think about their task.</p>
+                    <p><strong>Consider how you were thinking about your task. Which of the following statements best describes how you were thinking about your task during the Tile Game?</strong></p></div>`,
                     name: `goalRep`,
-                    options: [`"For each round, activate a tile before my five chances are up."`, `"Build winning streaks by activing as many tiles in a row as possible.`, `"Activate every single tile I see."`],
-                    requires: true,
+                    options: [`For each round, I was trying to activate a tile before my five chances were up.`, `I was trying to build streaks by activing as many tiles in a row as possible.`, `I was trying to activate every single tile I saw.`],
+                    required: true,
                     horizontal: false,
                 }],
             on_finish: (data) => {
