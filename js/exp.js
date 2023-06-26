@@ -389,7 +389,7 @@ var exp = (function() {
                     by activing as many tiles in a row as possible. These are just some of the many different goals people set for themselves.</p>
                     <p><strong>What goal did <i>you</i> set for <i>your</i>self? Please select the statement below that best describes the goal you set for yourself during the Tile Game.</strong></p></div>`,
                     name: `goalRep`,
-                    options: [`"Activate as many tiles as possible".`, `"For each round, activate a tile before my five chances are up."`, `"Build winning streaks by activing as many tiles in a row as possible.`],
+                    options: [`"For each round, activate a tile before my five chances are up."`, `"Build winning streaks by activing as many tiles in a row as possible.`, `"Activate every single tile I see."`],
                     requires: true,
                     horizontal: false,
                 }],
