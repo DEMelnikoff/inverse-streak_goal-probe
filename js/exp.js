@@ -3,30 +3,43 @@ var exp = (function() {
     let p = {};
 
     // randomly assign to conditions and save settings
+    const colorOrder = Math.floor(Math.random() * 2);
+
     const settings = {
-        pM: Array(.5, .13)[Math.floor(Math.random()*2)],
+        pM: [.5, .13][Math.floor(Math.random()*2)],
         pM_practice: .32,
-        gameType: ['1inN', 'bern'][Math.floor(Math.random()*2)],
-        val: 6,
+        gameType: [['1inN', 'bern'], ['bern', '1inN']][Math.floor(Math.random()*2)],
         nTrials: 62,
         basePay: 2.50,
         roundLength: 5,
-        hex: '#00aa00',
-        span: 'a-span',
-        color: "green",
+        hex_1: ['#00aa00', '#1067e8'][colorOrder],
+        hex_2: ['#00aa00', '#1067e8'][1 - colorOrder],
+        gameName_1: ['<span style="color: #00aa00; font-weight: bold">Green Game</span>', '<span style="color: #1067e8; font-weight: bold">Blue Game</span>'][colorOrder],
+        gameName_2: ['<span style="color: #00aa00; font-weight: bold">Green Game</span>', '<span style="color: #1067e8; font-weight: bold">Blue Game</span>'][1 - colorOrder],
+        color_1: ['<span style="color: #00aa00; font-weight: bold">green</span>', '<span style="color: #1067e8; font-weight: bold">blue</span>'][colorOrder],
+        color_2: ['<span style="color: #00aa00; font-weight: bold">green</span>', '<span style="color: #1067e8; font-weight: bold">blue</span>'][1 - colorOrder],
     };
+    console.log(settings.gameType, settings.pM);
 
-    settings.value = settings.val.toString();
-    settings.plural = settings.val == 1 ? '' : 's'; 
-    settings.wasWere = settings.val == 1 ? 'was' : 'were';
-    settings.tileHit = `<div class="box" style="background-color:${settings.hex}"> </div>`;
-    settings.tileMiss = `<div class="box" style="background-color:white"> </div>`;
+    settings.tileHit_1 = `<div class="outcome-container">
+                            <div class="current-round-text">{currentRound}</div>
+                            <div class="box" style="background-color:${settings.hex_1}"></div>
+                        </div>`;
+
+    settings.tileHit_2 = `<div class="outcome-container">
+                            <div class="current-round-text">{currentRound}</div>
+                            <div class="box" style="background-color:${settings.hex_2}"></div>
+                        </div>`;
+
+    settings.tileMiss = `<div class="outcome-container">
+                            <div class="current-round-text">{currentRound}</div>
+                            <div class="box" style="background-color:white"></div>
+                        </div>`;
 
     // save condition and URL data
     jsPsych.data.addProperties({
         pM: settings.pM,
         gameType: settings.gameType,
-        val: settings.val,
         basePay: settings.basePay,
         startTime: String(new Date()),
     });
@@ -38,103 +51,69 @@ var exp = (function() {
     */
 
     // constructor function for presenting post-practice tile game information and assessing comprehension
-    function MakePostPractice_tileGame({gameType, pM, pM_practice, val, plural, nTrials, roundLength}) {
+    function MakeTaskInstructions(gameType, gameName_1, gameName_2, color, hex, roundLength, pM, round) {
 
-        const info = {
+        const gameName = (round == 1) ? gameName_1 : gameName_2;
+
+        const howToEarn = {
             type: jsPsychInstructions,
-            pages: dmPsych.postPractice_tileGame({gameType, pM, pM_practice, val, plural, nTrials, roundLength}),
+            pages: dmPsych.tileGame_howToEarn(gameType, gameName_1, gameName_2, pM, color, hex, roundLength, round),
             show_clickable_nav: true,
         };
 
-        let q2, q3, o2, a1, a2, a3, a4;
+        let a1, a2, a3;
 
         if (gameType == 'invStrk') {
             // attention check #1
             a1 = 'Activate the tile in as few attempts as possible';
-            // attention check #2
-            q2 = 'The fewer attempts you take to activate the tile...';
-            o2 = ['the more fireworks you will receive.', 'the sooner the game will end.', 'the more points you will accumulate.'];
-            a2 = 'the more fireworks you will receive.';
-            // attention check #3
-            q3 = 'Most players activate the tile what percentage of the time?';
-            a3 = String(pM*100) + '%';
-            // attention check #4
-            a4 = String(nTrials);
+            a2 = 'You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.';
         };
 
         if (gameType == 'strk') {
             // attention check #1
             a1 = 'Activate the tile as many times in a row as possible';
-            // attention check #2
-            q2 = 'The longer your streak...';
-            o2 = ['the more fireworks you will receive.', 'the sooner the game will end.', 'the more points you will accumulate.'];
-            a2 = 'the more fireworks you will receive.';
-            // attention check #3
-            q3 = 'Most players activate the tile what percentage of the time?';
-            a3 = String(pM*100) + '%';
-            // attention check #4
-            a4 = String(nTrials);
+            a2 = 'You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.';
         };
 
         if (gameType == '1inN') {
             // attention check #1
-            a1 = 'Win each round';
-            // attention check #2
-            q2 = 'Each time you win a round...';
-            o2 = ['you will get a fireworks display.', 'the game will end.', 'you will receive points.'];
-            a2 = 'you will get a fireworks display.';
-            // attention check #3
-            q3 = 'Most players win what percentage of their rounds?';
-            a3 = String( Math.floor(100 * (1 - (1 - pM)**roundLength)) ) + '%';
-            // attention check #4
-            a4 = String(nTrials);
+            a1 = 'Activate a tile before my five chances are up.';
+            a2 = 'You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.';
+            a3 = (pM == .5) ? '90% of their rounds.' : '50% of their rounds.';
         };
 
         if (gameType == 'bern') {
             // attention check #1
-            a1 = 'Win each round';
-            // attention check #2
-            q2 = 'Each time you win a round...';
-            o2 = ['you will get a fireworks display.', 'the game will end.', 'you will receive points.'];
-            a2 = 'you will get a fireworks display.';
-            // attention check #3
-            q3 = 'Most players win what percentage of their rounds?';
-            a3 = String(pM*100) + '%';
-            // attention check #4
-            a4 = String(nTrials);
+            a1 = 'Activate each and every tile.';
+            a2 = 'You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.';
+            a3 = (pM == .5) ? '50% of their rounds.' : '10% of their rounds.';
         };
 
         const compChk = {
             type: jsPsychSurveyMultiChoice,
-            preamble: `<div style="font-size:16px"><p>To make sure you understand the full version of <strong>The Tile Game</strong>, please answer the following questions:</p></div>`,
+            preamble: `<div style="font-size:16px"><p>To make sure you understand the ${gameName}, please answer the following questions:</p></div>`,
             questions: [
                 {
-                  prompt: 'What is the goal of the Tile Game? (Multiple answers are possible, but one is best.)', 
-                  name: 'goalChk', 
-                  options: ['Activate the tile in as few attempts as possible', 'Activate the tile as many times in a row as possible', 'Win each round'], 
+                  prompt: `What is the goal of the ${gameName}?`, 
+                  name: 'attnChk1', 
+                  options: ['Activate each and every tile.', 'Activate a tile before my five chances are up.'], 
                   required: true
                 },
                 {
-                  prompt: q2, 
-                  name: 'fireworksChk', 
-                  options: o2, 
+                  prompt: `Each time you win a round...`, 
+                  name: 'attnChk2', 
+                  options: ['You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.', 'You will receive bonus points.', 'You will receive $1.00.'],
                   required: true
                 },
                 {
-                  prompt: q3, 
-                  name: 'probChk', 
-                  options: ['0%', '13%', '50%', '87%', '96%'], 
-                  required: true
-                },
-                {
-                  prompt: 'How many times will the tile appear?', 
-                  name: 'nChk', 
-                  options: ['22', '42', '62', '82', '102'], 
+                  prompt: `In the ${gameName}, players generally win...`, 
+                  name: 'attnChk3', 
+                  options: ['10% of their rounds.', '50% of their rounds.', '90% of their rounds.'], 
                   required: true
                 },
             ],
             on_finish: (data) => {
-                const correctAnswers = [a1, a2, a3, a4];
+                const correctAnswers = [a1, a2, a3];
                 const totalErrors = dmPsych.getTotalErrors(data, correctAnswers);
                 data.totalErrors = totalErrors;
             }
@@ -154,66 +133,21 @@ var exp = (function() {
             }
         };
 
-        this.timeline = [info, compChk, conditionalNode];
-        this.loop_function = () => {
-            const fail = jsPsych.data.get().last(2).select('totalErrors').sum() > 0 ? true : false;
-            return fail;
-        };
-    };
-
-
-    function MakeSurveyIntro() {
-        const info = {
-            type: jsPsychInstructions,
-            pages: [`<p><div class='parent' style='text-align: left'>For the next 10 to 15 minutes, you'll be helping us answer the following question:<br>
-                "What makes some games more immersive and engaging than others?"</p>
-
-                <p>Specifically, you'll play two games and provide feedback about each one. 
-                By playing games and providing feedback, you'll help us understand how to design games 
-                that are as immersive and engaging as possible.</p>
-
-                <p>To make it easier for you to provide feedback, we will explain exactly what it means<br>
-                for a game to be immersive and engaging. To continue, press "Next".</p></div>`,
-
-                `<p><div class='parent' style='text-align: left'>A game that is immersive and engaging captures your attention and "sucks you in."</p>
-                <p>When a game is extremely immersive and engaging, it feels difficult to stop playing<br>
-                even when you want to quit and do something else.</p></div>`],
-            show_clickable_nav: true,
-            post_trial_gap: 500,
-        };
-        const compChk = {
-            type: jsPsychSurveyMultiChoice,
-            questions: [
-                {
-                    prompt: `What does it mean for a game to be immersive and engaging?`,
-                    name: `defineFlow`,
-                    options: [`It means that I enjoyed the game.`, `It means that I won a lot of money by playing the game.`, `It means that the game captured my attention and sucked me in.`],
-                    required: true,
-                    horizontal: false,
-                }],
-            on_finish: (data) => {
-                const correctAnswers = [`It means that the game captured my attention and sucked me in.`];
-                const totalErrors = dmPsych.getTotalErrors(data, correctAnswers);
-                data.totalErrors = totalErrors;
-            }
-        };
-        const errorMessage = {
-            type: jsPsychInstructions,
-            pages: [`<div class='parent'><p>You provided a wrong answer.</p><p>To make sure you understand what makes a game immersive and engaging,<br>please continue to re-read the instructions.</p></div>`],
-            show_clickable_nav: true,
-        };
-        const conditionalNode = {
-            timeline: [errorMessage],
-            conditional_function: (data) => {
-                const fail = jsPsych.data.get().last(1).select('totalErrors').sum() > 0 ? true : false;
+        const attnChkLoop = { 
+            timeline: [howToEarn, compChk, conditionalNode],
+            loop_function: () => {
+                const fail = jsPsych.data.get().last(2).select('totalErrors').sum() > 0 ? true : false;
                 return fail;
-            }
+            },
         };
-        this.timeline = [info, compChk, conditionalNode];
-        this.loop_function = () => {
-            const fail = jsPsych.data.get().last(2).select('totalErrors').sum() > 0 ? true : false;
-            return fail;
+
+        const getReady = {
+            type: jsPsychInstructions,
+            pages: [`<div class='parent'><p>You're now ready to play the ${gameName}.</p><p>Proceed to begin.</p></div>`],
+            show_clickable_nav: true,
         };
+
+        this.timeline = [attnChkLoop, getReady];
     };
 
 
@@ -225,42 +159,42 @@ var exp = (function() {
         show_clickable_nav: true,
     };
 
-    p.surveyIntro = new MakeSurveyIntro();
-
-    p.preFull_task1 = {
+    p.intro = {
         type: jsPsychInstructions,
-        pages: [`<div class='instructions'>
-            <p>Next, you'll spend a few minutes playing the first of two games: a game called "Hole in One."<br>
-            After you finish, you'll answer some questions about your experience.</p>
-            <p>When you're ready, press "Next" to continue.</p></div>`],
+        pages: [`<div class='parent' style='text-align: left'>
+                    <p>We are designing games that scientists can use to study visual attention. 
+                    Our goal is to make the games as immersive and engaging as possible.
+                    To make the games as immersive and engaging as possible, we are getting feedback from people like you.</p>
+                    <p>You will play two different games: the ${settings.gameName_1} and the ${settings.gameName_2}. 
+                    After each game, you will report how immersed and engaged you felt.</p>
+                    <p>The games are very similar, but their color schemes will help you tell them apart.</p>
+                </div>`,
+
+                `<div class='parent' style='text-align: left'>
+                    <p>During both games, you'll be competing for a chance to win a <b>$100.00 bonus prize</b>.</p>
+                    <p>Specifically, during both the ${settings.gameName_1} and the ${settings.gameName_2}, you'll earn tokens. The tokens you earn will be entered into a lottery, and if one of your tokens is drawn, you'll win $100.00. To maximize your chances of winning a $100.00 bonus, you'll need to earn as many tokens as possible.</p>
+                    <p>Continue to learn about and play the ${settings.gameName_1}. After you finish, you'll learn about and play the ${settings.gameName_2}.</p>
+                </div>`],
+        show_clickable_nav: true,
+        post_trial_gap: 500,
+    };
+
+    p.round1_howToPlay = {
+        type: jsPsychInstructions,
+        pages: dmPsych.tileGame_howToPlay(settings.gameType[0], settings.gameName_1, settings.color_1, settings.hex_1, settings.roundLength),
         show_clickable_nav: true,
     };
 
-    p.intro_task2 = {
+    p.round1_howToEarn = new MakeTaskInstructions(settings.gameType[0], settings.gameName_1, settings.gameName_2, settings.color_1, settings.hex_1, settings.roundLength, settings.pM, 1);
+
+    p.round1_complete = {
         type: jsPsychInstructions,
-        pages: dmPsych.intro_tileGame(settings),
+        pages: dmPsych.tileGame_round1Complete(settings.gameName_1, settings.gameName_2),
         show_clickable_nav: true,
     };
 
-    p.prePractice_task2 = {
-        type: jsPsychInstructions,
-        pages: dmPsych.prePractice_tileGame(settings),
-        show_clickable_nav: true,
-    };
+    p.round2_howToEarn = new MakeTaskInstructions(settings.gameType[1], settings.gameName_1, settings.gameName_2, settings.color_2, settings.hex_2, settings.roundLength, settings.pM, 2);
 
-    p.practiceComplete = {
-        type: jsPsychInstructions,
-        pages: dmPsych.practiceComplete_tileGame(),
-        show_clickable_nav: true,
-    };
-
-    p.postPractice_task2 = new MakePostPractice_tileGame(settings);
-
-    p.preTask_task2 = {
-        type: jsPsychInstructions,
-        pages: dmPsych.preTask_tileGame(settings),
-        show_clickable_nav: true,
-    };
 
    /*
     *
@@ -268,33 +202,11 @@ var exp = (function() {
     *
     */
 
-    p.task1 = {
-        type: dmPsychHoleInOne,
-        stimulus: dmPsych.holeInOne.run,
-        total_shots: 12,  
-        canvas_size: [475, 900],
-        ball_color: 'white',
-        ball_size: 10,
-        ball_xPos: .13,
-        ball_yPos: .5,
-        wall_width: 75,
-        wall_color: '#797D7F',
-        wall_xPos: .9,
-        hole_size: 75,
-        friction: .01,
-        tension: .008,
-        prompt: `<div class='instructions'>
+    p.practice1 = new dmPsych.MakeTileGame(settings.hex_1, settings.tileHit_1, settings.tileMiss, settings.roundLength, settings.gameType[0], 10, settings.pM_practice, 'practice');
 
-        <p><strong>Hole in One</strong>. The goal of Hole in One is to shoot the ball through the hole.<br>
-        Follow the instructions in the game area, then play Hole in One. 
-        We'll let you know when time is up.</p></div>`,
-        data: {block: 'holeInOne'},
-    };
+    p.round1 = new dmPsych.MakeTileGame(settings.hex_1, settings.tileHit_1, settings.tileMiss, settings.roundLength, settings.gameType[0], settings.nTrials, settings.pM, 'tileGame');
 
-    p.practice2 = new dmPsych.MakeTileGame(settings, settings.gameType, 10, settings.pM_practice, 'practice');
-
-    p.task2 = new dmPsych.MakeTileGame(settings, settings.gameType, settings.nTrials, settings.pM, 'tileGame');
-
+    p.round2 = new dmPsych.MakeTileGame(settings.hex_2, settings.tileHit_2, settings.tileMiss, settings.roundLength, settings.gameType[1], settings.nTrials, settings.pM, 'tileGame');
 
    /*
     *
@@ -311,21 +223,21 @@ var exp = (function() {
         this.type = jsPsychSurveyLikert;
         this.preamble = `<div style='padding-top: 50px; width: 850px; font-size:16px'>
 
-        <p>Thank you for completing ${name}!</p>
+        <p>Thank you for completing the ${name}!</p>
 
-        <p>During ${name}, to what extent did you feel immersed and engaged in what you were doing?<br>
+        <p>During the ${name}, to what extent did you feel immersed and engaged in what you were doing?<br>
         Report the degree to which you felt immersed and engaged by answering the following questions.</p></div>`;
         this.questions = [
-            {prompt: `During ${name}, to what extent did you feel <strong>absorbed</strong> in what you were doing?`,
+            {prompt: `During the ${name}, to what extent did you feel <strong>absorbed</strong> in what you were doing?`,
             name: `absorbed`,
             labels: zeroToExtremely},
-            {prompt: `During ${name}, to what extent did you feel <strong>immersed</strong> in what you were doing?`,
+            {prompt: `During the ${name}, to what extent did you feel <strong>immersed</strong> in what you were doing?`,
             name: `immersed`,
             labels: zeroToExtremely},
-            {prompt: `During ${name}, to what extent did you feel <strong>engaged</strong> in what you were doing?`,
+            {prompt: `During the ${name}, to what extent did you feel <strong>engaged</strong> in what you were doing?`,
             name: `engaged`,
             labels: zeroToExtremely},
-            {prompt: `During ${name}, to what extent did you feel <strong>engrossed</strong> in what you were doing?`,
+            {prompt: `During the ${name}, to what extent did you feel <strong>engrossed</strong> in what you were doing?`,
             name: `engrossed`,
             labels: zeroToExtremely},
         ];
@@ -344,21 +256,21 @@ var exp = (function() {
         <p>Below are a few more questions about the ${name}.</p>
 
         <p>Instead of asking about immersion and engagement, these questions ask about <strong>enjoyment</strong>.<br>
-        Report how much you <strong>enjoyed</strong> ${name} by answering the following questions.</p></div>`;
+        Report how much you <strong>enjoyed</strong> the ${name} by answering the following questions.</p></div>`;
         this.questions = [
-            {prompt: `How much did you <strong>enjoy</strong> playing ${name}?`,
+            {prompt: `How much did you <strong>enjoy</strong> playing the ${name}?`,
             name: `enjoyable`,
             labels: zeroToALot},
-            {prompt: `How much did you <strong>like</strong> playing ${name}?`,
+            {prompt: `How much did you <strong>like</strong> playing the ${name}?`,
             name: `like`,
             labels: zeroToALot},
-            {prompt: `How much did you <strong>dislike</strong> playing ${name}?`,
+            {prompt: `How much did you <strong>dislike</strong> playing the ${name}?`,
             name: `dislike`,
             labels: zeroToALot},
-            {prompt: `How much <strong>fun</strong> did you have playing ${name}?`,
+            {prompt: `How much <strong>fun</strong> did you have playing the ${name}?`,
             name: `fun`,
             labels: zeroToALot},
-            {prompt: `How <strong>entertaining</strong> was ${name}?`,
+            {prompt: `How <strong>entertaining</strong> was the ${name}?`,
             name: `entertaining`,
             labels: zeroToExtremely},
         ];
@@ -370,12 +282,12 @@ var exp = (function() {
         };
     };
     
-    p.task1_Qs = {
-        timeline: [new flowQs('Hole in One', 'holeInOne'), new enjoyQs('Hole in One', 'holeInOne')]
+    p.round1_Qs = {
+        timeline: [new flowQs(settings.gameName_1, 'game_1'), new enjoyQs(settings.gameName_1, 'game_1')]
     };
 
-    p.task2_Qs = {
-        timeline: [new flowQs('the Tile Game', 'tileGame'), new enjoyQs('the Tile Game', 'tileGame')]
+    p.round2_Qs = {
+        timeline: [new flowQs(settings.gameName_2, 'game_2'), new enjoyQs(settings.gameName_2, 'game_2')]
     };
 
     p.demographics = (function() {
@@ -492,10 +404,9 @@ var exp = (function() {
 
 }());
 
-const timeline = [exp.consent, exp.surveyIntro, 
-    exp.preFull_task1, exp.task1, exp.task1_Qs,
-    exp.intro_task2, exp.prePractice_task2, exp.practice2, exp.practiceComplete, exp.postPractice_task2, exp.preTask_task2, exp.task2, exp.task2_Qs,
-    exp.demographics, exp.save_data];
+const timeline = [exp.consent, exp.intro, 
+    exp.round1_howToPlay, exp.practice1, exp.round1_howToEarn, exp.round1, exp.round1_Qs, exp.round1_complete, 
+    exp.round2_howToEarn, exp.round2, exp.round2_Qs, exp.demographics, exp.save_data];
 
 // initiate timeline
 jsPsych.run(timeline);

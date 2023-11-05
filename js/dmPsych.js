@@ -178,9 +178,38 @@ const dmPsych = (function() {
   };
 
   // create tile game
-  obj.MakeTileGame = function({val, plural, hex, tileHit, tileMiss, roundLength}, gameType, nTrials, pM, blockName) {
+  obj.MakeTileGame = function(hex, tileHit, tileMiss, roundLength, gameType, nTrials, pM, blockName) {
 
-    let losses = 0, round = 1, streak = 0, trialNumber = 0, tooSlow = null, tooFast = null;
+    let losses = 0, round = 1, streak = 0, trialNumber = 0, tooSlow = null, tooFast = null, message;
+
+    let displayFeedback = (blockName == "practice") ? "hidden" : "visible"
+
+    const tokens_html =  `<div class="outcome-container">
+                            <div class="current-round-win" style="color:${hex}">You won Round {currentRound}!</div>
+                            <div class="outcome-image" style="visibility: ${displayFeedback}; color:${hex}"><img src="./img/coins.jpg" height="350px"></div>
+                            <div class="outcome-text-win" style="visibility: ${displayFeedback}; color:${hex}">+10 Tokens</div>
+                          </div>`;
+
+    const noTokens_html = `<div class="outcome-container">
+                            <div class="current-round-lose">You lost Round {currentRound}!</div>
+                            <div class="outcome-image" style="visibility: ${displayFeedback}"><img src="./img/no-coins.jpg" height="350px"></div>
+                            <div class="outcome-text-lose" style="visibility: ${displayFeedback}">+0 Tokens</div>
+                          </div>`;
+
+    const currentRound_html = `<div class="outcome-container">
+                                <div class="current-round-text">{currentRound}</div>
+                                <div class="iti-text">{iti}</div>
+                              </div>`;
+
+    const probe_html = `<div class="outcome-container">
+                          <div class="current-round-text">{currentRound}</div>
+                          <div class="box" style="background-color:gray"></div>
+                        </div>`;
+
+    const warning_html = `<div class="outcome-container">
+                            <div class="current-round-text">{currentRound}</div>
+                            <div class="warning-text"><p>Too Fast!</p><p>Please wait for the tile to appear before pressing your SPACEBAR</p></div>
+                          </div>`;
 
     const latency = dmPsych.makeRT(nTrials, pM, roundLength);
 
@@ -208,10 +237,12 @@ const dmPsych = (function() {
     const iti = {
       type: jsPsychHtmlKeyboardResponse,
       data: {trial_type: 'iti', block: blockName},
-      stimulus: "",
+      stimulus: () => {
+        return currentRound_html.replace("{currentRound}", `Round ${round}`).replace("{iti}", ``);;
+      },
       choices: [" "],
       trial_duration: () => {
-        return jsPsych.randomization.sampleWithoutReplacement([250, 500, 750, 1000, 1250, 1500, 1750, 2000], 1)[0];
+        return Math.floor(Math.random() * 1751) + 250;
       },
       on_finish: (data) => {
         data.response == " " ? tooFast = 1 : tooFast = 0;
@@ -224,14 +255,11 @@ const dmPsych = (function() {
       data: {trial_type: 'warning', block: blockName},
       choices: "NO_KEYS",
       stimulus: () => {
-        const message = `<div style='font-size: 20px'><p>Too Fast!</p><p>Please wait for the tile to appear before pressing your SPACEBAR</p></div>`;
+        const message = warning_html.replace("{currentRound}", `Round ${round}`);
         return (tooFast) ? message : '';
       },
       trial_duration: () => {
         return (tooFast) ? 2500 : 0;
-      },
-      post_trial_gap: () => {
-        return (tooFast) ? 1000 : 0;
       },
     };
 
@@ -245,7 +273,9 @@ const dmPsych = (function() {
     const probe = {
       type: jsPsychHtmlKeyboardResponse,
       data: {trial_type: 'probe', block: blockName},
-      stimulus: '<div class="box" style="background-color:gray"></div>',
+      stimulus: () => {
+        return probe_html.replace("{currentRound}", `Round ${round}`);
+      },
       choices: [" "],
       trial_duration: () => { 
         return latency[trialNumber] 
@@ -261,9 +291,9 @@ const dmPsych = (function() {
       data: {trial_type: `activation`, block: blockName},
       stimulus: () => {
         if (!tooSlow) {
-          return tileHit
+          return tileHit.replace("{currentRound}", `Round ${round}`);
         } else {
-          return tileMiss
+          return tileMiss.replace("{currentRound}", `Round ${round}`);
         }
       },
       choices: [" "],
@@ -272,45 +302,36 @@ const dmPsych = (function() {
     };
 
     const feedback = {
-      type: jsPsychCanvasKeyboardResponse,
+      type: jsPsychHtmlKeyboardResponse,
       data: {trial_type: `feedback`, block: blockName},
-      canvas_size: [700, 900],
-      stimulus: function(c) { 
-        let maxFireworks, message, fontSize;
+      stimulus: () => {
         if (gameType == 'bern') {
           let nextRoundMsg = (trialNumber + 1 < nTrials) ? 'Round '+(round + 1)+' will now begin' : 'The game is now complete';
           if (tooSlow) {
-            maxFireworks = 0;
-            fontSize = [50, 30];
-            message = 'You lost Round '+round+'\n'+nextRoundMsg;
+            message = noTokens_html.replace("{currentRound}", `${round}`);
             round++;          
           } else {
-            maxFireworks = blockName == 'practice' ? 0 : 6;
-            fontSize = [50, 30];
-            message = 'You won Round '+round+'\n'+nextRoundMsg;
+            message = tokens_html.replace("{currentRound}", `${round}`);
             round++;          
           };
+          return message;
         }; 
         if (gameType == '1inN') {
           let nextRoundMsg = (trialNumber + 1 < nTrials) ? 'Round '+(round + 1)+' will now begin' : 'The game is now complete';
           if (tooSlow && losses < 4) {
             losses++;
-            maxFireworks = 0;
-            fontSize = [30];
-            message = 'Continuing Round '+round+'...';
+            let tryOrTries = (losses == 4) ? "try" : "tries"
+            message = currentRound_html.replace("{currentRound}", `Round ${round}`).replace("{iti}", ``);
           } else if (tooSlow && losses == roundLength - 1) {
             losses = 0;
-            maxFireworks = 0;
-            fontSize = [50, 30];
-            message = 'You lost Round '+round+'\n'+nextRoundMsg;
+            message = noTokens_html.replace("{currentRound}", `${round}`);
             round++;
           } else {
             losses = 0;
-            maxFireworks = blockName == 'practice' ? 0 : 6;
-            fontSize = [50, 30];
-            message = 'You won Round '+round+'\n'+nextRoundMsg;
+            message = tokens_html.replace("{currentRound}", `${round}`);
             round++;
           };
+          return message;
         };
         if (gameType == 'invStrk') {
           let nextRoundMsg = (trialNumber + 1 < nTrials) ? 'Get ready for the next round' : 'The game is now complete';
@@ -347,11 +368,9 @@ const dmPsych = (function() {
             message = 'Current streak:\n' + String(streak);
           };
         };
-
-        return obj.drawFireworks(c, 3000, maxFireworks, message, fontSize)
       },
       choices: "NO_KEYS",
-      trial_duration: 3000,
+      trial_duration: 2000,
       on_finish: (data) => {
         trialNumber++;
         if (trialNumber == nTrials) { 
@@ -1242,15 +1261,14 @@ const dmPsych = (function() {
     return html;
   };
 
-  obj.intro_tileGame = function({basePay}) {
+  obj.tileGame_round1Complete = function(game1, game2) {
       const html = [`<div class='parent'>
-          <p>Thank you for playing Hole in One!</p>
-          <p>Next, you'll play a different game called the Tile Game.</p>
-          <p>When you are ready, please continue.</p></div>`];
+          <p>Thank you for playing the ${game1}!</p>
+          <p>Next, you'll continue earning tokens by playing the ${game2}.</p></div>`];
       return html;
   };
 
-  obj.prePractice_tileGame = function({gameType, val, span, color, hex, roundLength}) {
+  obj.tileGame_howToPlay = function(gameType, gameName, color, hex, roundLength) {
 
       let html;
 
@@ -1337,85 +1355,74 @@ const dmPsych = (function() {
       };
 
       if (gameType == '1inN') {
-          html = [`<div class='parent'>
-              <p>The Tile Game is played in multiple rounds.</p>
+          html = [
+              `<div class='parent'>
+                <p>The ${gameName} is played in multiple rounds.</p>
               </div>`,
 
               `<div class='parent'>
-              <p>In each round, you'll have ${roundLength} chances to activate the grey tile below.</br>
-              Your goal is to win each round by activating the tile before your ${roundLength} chances are up.</p>
-              <div class='box' style='background-color:gray'></div>
+                <p>In each round, you'll have ${roundLength} chances to activate the grey tile below.</br>
+                Your goal is to win each round by activating the tile before your ${roundLength} chances are up.</p>
+                <div class='box' style='background-color:gray'></div>
               </div>`,
 
               `<div class='parent'>
-              <p>The tile will appear on your screen, then disappear very quickly. To activate it, you must press your SPACEBAR 
-              before it disappears; whenever you see the tile, you should press your SPACEBAR as fast as possible.</p>
-              <div class='box' style='background-color:gray'></div>
+                <p>The tile will appear on your screen, then disappear very quickly. To activate it, you must press your SPACEBAR 
+                before it disappears; whenever you see the tile, you should press your SPACEBAR as fast as possible.</p>
+                <div class='box' style='background-color:gray'></div>
               </div>`,
 
               `<div class='parent'>
-              <p>If you activate the tile before your ${roundLength} chances are up, it will turn <span class='${span}'>${color}</span>...</p>
-              <div class='box' style='background-color:${hex}'></div>
+                <p>If you activate the tile before your ${roundLength} chances are up, it will turn ${color}.</p>
+                <div class='box' style='background-color:${hex}'></div>
               </div>`,
 
               `<div class='parent'>
-              <p>...then, you'll see a message indicating that you won the round.<br>
-              For instance, if you were to win Round 5, you'd see the following message:</p>
-              <p style='font-size:50pt; margin-bottom:70px'>You won Round 5</p><p style='font-size:30pt; margin:0px'>Round 6 will now begin</p>
+                <p>If you respond too slowly, the tile will disappear without being activated.</p>
+                <div class='box' style='background-color:white'></div>
               </div>`,
 
               `<div class='parent'>
-              <p>If you fail to activate the tile before the end of the round, you'll see a message indicating that you lost the round.<br>
-              For instance, if you were to lose Round 5, you'd see the following message:</p>
-              <p style='font-size:50pt; margin-bottom:70px'>You lost Round 5</p><p style='font-size:30pt; margin:0px'>Round 6 will now begin</p>
-              </div>`,
-
-              `<div class='parent'>
-              <p>To get a feel for the Tile Game, you'll complete a practice session.<br>
-              Once you proceed, the practice session will start, so get ready to press your SPACEBAR.</p>
-              <p>Continue to begin practicing.</p>
-              </div>`];
+                <p>To get a feel for the Tile Game, you'll complete a practice session.</p>
+                <p>Remember: Your goal is to win each round by activating the tile before your ${roundLength} chances are up.</p>
+                <p>Once you proceed, the practice session will start, so get ready to press your SPACEBAR.</p>
+              </div>`
+          ];
       };
 
       if (gameType == 'bern') {
-          html = [`<div class='parent'>
-              <p>The Tile Game is played in multiple rounds.</p>
+          html = [
+              `<div class='parent'>
+                <p>The ${gameName} is played in multiple rounds.</p>
               </div>`,
 
               `<div class='parent'>
-              <p>In each round, you'll have one chance to activate the grey tile below.</br>
-              Your goal is to win each round by activating the tile.</p>
-              <div class='box' style='background-color:gray'></div>
+                <p>In each round, your goal is to activate the tile grey tile below.</p>
+                <div class='box' style='background-color:gray'></div>
               </div>`,
 
               `<div class='parent'>
-              <p>The tile will appear on your screen, then disappear very quickly. To activate it, you must press your SPACEBAR 
-              before it disappears; whenever you see the tile, you should press your SPACEBAR as fast as possible.</p>
-              <div class='box' style='background-color:gray'></div>
+                <p>The tile will appear on your screen, then disappear very quickly. To activate it, you must press your SPACEBAR 
+                before it disappears; whenever you see the tile, you should press your SPACEBAR as fast as possible.</p>
+                <div class='box' style='background-color:gray'></div>
               </div>`,
 
               `<div class='parent'>
-              <p>If you activate the tile, it will turn <span class='${span}'>${color}</span>...</p>
-              <div class='box' style='background-color:${hex}'></div>
+                <p>If you activate the tile, it will turn ${color}.</p>
+                <div class='box' style='background-color:${hex}'></div>
               </div>`,
 
               `<div class='parent'>
-              <p>...then, you'll see a message indicating that you won the round.<br>
-              For instance, if you were to win Round 5, you'd see the following message:</p>
-              <p style='font-size:50pt; margin-bottom:70px'>You won Round 5</p><p style='font-size:30pt; margin:0px'>Round 6 will now begin</p>
+                <p>If you respond too slowly, the tile will disappear without being activated.</p>
+                <div class='box' style='background-color:white'></div>
               </div>`,
 
               `<div class='parent'>
-              <p>If you fail to activate the tile, you'll see a message indicating that you lost the round.<br>
-              For instance, if you were to lose Round 5, you'd see the following message:</p>
-              <p style='font-size:50pt; margin-bottom:70px'>You lost Round 5</p><p style='font-size:30pt; margin:0px'>Round 6 will now begin</p>
-              </div>`,
-
-              `<div class='parent'>
-              <p>To get a feel for the Tile Game, you'll complete a practice session.<br>
-              Once you proceed, the practice session will start, so get ready to press your SPACEBAR.</p>
-              <p>Continue to begin practicing.</p>
-              </div>`];
+                <p>To get a feel for the Tile Game, you'll complete a practice session.</p>
+                <p>Remember: Your goal is to win each round by activating the tile.</p>
+                <p>Once you proceed, the practice session will start, so get ready to press your SPACEBAR.</p>
+              </div>`
+          ];
       };
 
       return html;
@@ -1428,11 +1435,9 @@ const dmPsych = (function() {
       return html;
   };
 
-  obj.postPractice_tileGame = function({gameType, pM, pM_practice, val, plural, nTrials, roundLength}) {
+  obj.tileGame_howToEarn = function(gameType, gameName_1, gameName_2, pM, color, hex, roundLength, round) {
 
       let html;
-
-      let easierOrHarder = pM > pM_practice ? 'easier' : 'more difficult';
 
       if (gameType == 'invStrk') {
         html = [`<div class='parent'>
@@ -1481,49 +1486,102 @@ const dmPsych = (function() {
       };
 
       if (gameType == '1inN') {
+        const hitRate = (pM == .5) ? "90%" : "50%";
+        const difficulty = (pM == .5) ? "relatively easy" : "moderately difficult";
+        if (round == 1) {
+          html = [`<div class='parent'>
+                    <p>Practice is now complete.</p>
+                    <p>Now that you have a feel for the ${gameName_1}, you'll learn how to earn tokens.</p>
+                  </div>`,
 
-        const pWin = Math.floor(100 * (1 - (1 - pM)**roundLength));
+                  `<div class='parent'>
+                    <p>In the ${gameName_1}, players earn 10 tokens for every round they win.</p>
+                    <p>Players earn 0 tokens for every round they lose.</p>
+                  </div>`,
 
-        html = [`<div class='parent'>
-            <p>The full version of the Tile Game differs from the practice version in three ways.</p>
-            </div>`,
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you win a round, you'll see a message like this one indicating that you earned 10 tokens.</p>                
+                    <div class="current-round-win" style="top:20%; color:${hex}">You won Round 5!</div>
+                    <div class="outcome-image" style="top:60%"><img src="./img/coins.jpg" height="350px"></div>
+                    <div class="outcome-text-win" style="top:60%; color:${hex}">+10 Tokens</div>
+                  </div>`,
 
-            `<div class='parent'>
-            <p>First, the full version of the Tile Game will be ${easierOrHarder} than the practice version.<br>
-            Specifically, most players win <strong>${pWin}%</strong> of their rounds.</p>
-            </div>`,
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you lose a round, you'll see a message like this one indicating that you earned 0 tokens.</p>
+                    <div class="current-round-lose" style="top:20%">You lost Round 5!</div>
+                    <div class="outcome-image" style="top:60%"><img src="./img/no-coins.jpg" height="350px"></div>
+                    <div class="outcome-text-lose" style="top:60%">+0 Tokens</div>
+                  </div>`,
 
-            `<div class='parent'>
-            <p>Second, the full version of the Tile Game will be longer than the practice version.<br>
-            Specifically, the tile will appear ${nTrials} times.</p>
-            </div>`,     
+                 `<div class='parent'>
+                    <p>The ${gameName_1} is specifically calibrated to be ${difficulty}.</p>
+                    <p>Specifically, players generally win <b>${hitRate}</b> of their rounds.</p>
+                  </div>`];
+        } else if (round == 2) {
+          html = [`<div class='parent' style='text-align: left'>
+                    <p>The ${gameName_2} is identical to the ${gameName_1} with one exception:</p>
+                    <p>In each round of the ${gameName_2}, you'll have ${roundLength} chances to activate the grey tile.</p>
+                    <p>Accordingly, your goal in the ${gameName_2} is not to activate each and every tile.<br>
+                    Instead, your goal is to win each round by activating the tile before your ${roundLength} chances are up.</p>
+                    <p>You'll still receive 10 tokens for each round you win, and you'll still receive 0 tokens for each round you lose.</p>
+                  </div>`,
 
-            `<div class='parent'>
-            <p>Third, in the full version of the Tile Game you'll be rewarded with a<br>
-            fireworks display each time you win a round!</p>
-            </div>`];
+                 `<div class='parent' style='text-align: left'>
+                    <p>Since the ${gameName_2} gives you five chances per round to activate the tile,<br>
+                    it is easier than the ${gameName_1}.</p>
+                    <p>Specifically, in the ${gameName_2}, players generally win <b>${hitRate}</b> of their rounds.</p>
+                  </div>`];          
+        };
       };
 
       if (gameType == 'bern') {
-        html = [`<div class='parent'>
-            <p>The full version of the Tile Game differs from the practice version in three ways.</p>
-            </div>`,
+        const hitRate = (pM == .5) ? "50%" : "10%";
+        const difficulty = (pM == .5) ? "moderately difficult" : "very difficult";
+        if (round == 1) {
+          html = [`<div class='parent'>
+                  <p>Practice is now complete.</p>
+                  <p>Now that you have a feel for the ${gameName_1}, you'll learn how to earn tokens.</p>
+                </div>`,
 
-            `<div class='parent'>
-            <p>First, the full version of the Tile Game will be ${easierOrHarder} than the practice version.<br>
-            Specifically, most players win <strong>${pM*100}%</strong> of their rounds.</p>
-            </div>`,
+                `<div class='parent'>
+                  <p>In the ${gameName_1}, players earn 10 tokens for every round they win.</p>
+                  <p>Players earn 0 tokens for every round they lose.</p>
+                </div>`,
 
-            `<div class='parent'>
-            <p>Second, the full version of the Tile Game will be longer than the practice version.<br>
-            Specifically, the tile will appear ${nTrials} times.</p>
-            </div>`,     
+                `<div class='parent' style='height: 550px'>
+                  <p>If you win a round, you'll see a message like this one indicating that you earned 10 tokens.</p>                
+                  <div class="current-round-win" style="top:20%; color:${hex}">You won Round 5!</div>
+                  <div class="outcome-image" style="top:60%"><img src="./img/coins.jpg" height="350px"></div>
+                  <div class="outcome-text-win" style="top:60%; color:${hex}">+10 Tokens</div>
+                </div>`,
 
-            `<div class='parent'>
-            <p>Third, in the full version of the Tile Game you'll be rewarded with a<br>
-            fireworks display each time you win a round!</p>
-            </div>`];
-      };
+                `<div class='parent' style='height: 550px'>
+                  <p>If you lose a round, you'll see a message like this one indicating that you earned 0 tokens.</p>
+                  <div class="current-round-lose" style="top:20%">You lost Round 5!</div>
+                  <div class="outcome-image" style="top:60%"><img src="./img/no-coins.jpg" height="350px"></div>
+                  <div class="outcome-text-lose" style="top:60%">+0 Tokens</div>
+                </div>`,
+
+               `<div class='parent'>
+                  <p>The ${gameName_1} is specifically calibrated to be ${difficulty}.</p>
+                  <p>Specifically, players generally win <b>${hitRate}</b> of their rounds.</p>
+                </div>`];
+        } else if (round == 2) {
+          html = [`<div class='parent' style='text-align: left'>
+                    <p>The ${gameName_2} is identical to the ${gameName_1} with one exception:</p>
+                    <p>You'll no longer have ${roundLength} chances to activate the tile per round.<br>
+                    Instead, you'll have just one chance per round to activate the tile.</p>
+                    <p>Accordingly, in the ${gameName_2}, your goal is to activate each and every tile you see.</p>
+                    <p>You'll still receive 10 tokens for each round you win, and you'll still receive 0 tokens for each round you lose.</p>
+                  </div>`,
+
+                 `<div class='parent' style='text-align: left'>
+                    <p>Since the ${gameName_2} gives you just one chance per round to activate the tile,<br>
+                    it is more difficult than the ${gameName_1}.</p>
+                    <p>Specifically, in the ${gameName_2}, players generally win <b>${hitRate}</b> of their rounds.</p>
+                  </div>`];
+        };
+      };  
 
       return html;
   };
@@ -1617,7 +1675,6 @@ const dmPsych = (function() {
         <p>To get a feel for Race for the Prize, you'll complete two practice runs.</p>
         <p>In the practice runs, you will not race against an opponent.<br>
         You will simply practice accelerating by pressing the appropriate keys as fast as possible.</p>
-        <p>Continue to begin practicing.</p>
         </div>`];
 
       prompt_attnChk1 = `In order to reach top speed, I'll have to press my keys as fast as possible.`;
@@ -1640,7 +1697,6 @@ const dmPsych = (function() {
         <p>To get a feel for Race for the Prize, you'll complete two practice runs.</p>
         <p>In the practice runs, you will not race against an opponent.<br>
         You will simply practice accelerating by pressing the appropriate keys as just the right moment.</p>
-        <p>Continue to begin practicing.</p>
         </div>`];
 
       prompt_attnChk1 = `In order to reach top speed, I'll have to press my keys at just the right moment.`;

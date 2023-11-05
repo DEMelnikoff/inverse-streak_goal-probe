@@ -256,3 +256,99 @@
   font-weight: bold;
   color: #cf0000;
 }
+
+
+.outcome-container {
+    position: relative; 
+    text-align: center; 
+    width: 800px; 
+    height: 600px;
+    color: black; 
+}
+
+.outcome-image {
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 100%;
+}
+
+.outcome-text-win {
+    position: absolute; 
+    font-size: 70px;
+    color: #00aa00;
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 100%;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
+}
+
+.outcome-text-lose {
+    position: absolute; 
+    font-size: 70px;
+    color: #a9a9a9;
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 100%;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
+}
+
+.current-round-win {
+    position: absolute; 
+    font-size: 40px;
+    color: #00aa00;
+    top: 10%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 100%;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
+}
+
+.current-round-lose {
+    position: absolute; 
+    font-size: 40px;
+    color: #a9a9a9;
+    top: 10%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 100%;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
+}
+
+.current-round-text {
+    position: absolute; 
+    font-size: 40px;
+    color: black;
+    top: 10%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 100%;
+    font-weight: bold;
+}
+
+.iti-text {
+    position: absolute; 
+    font-size: 60px;
+    color: black;
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 100%;
+}
+
+.warning-text {
+    position: absolute; 
+    font-size: 20px;
+    color: black;
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 100%;
+}
