@@ -178,22 +178,24 @@ const dmPsych = (function() {
   };
 
   // create tile game
-  obj.MakeTileGame = function(hex, tileHit, tileMiss, roundLength, gameType, nTrials, pM, blockName) {
+  obj.MakeTileGame = function(hex, tileHit, tileMiss, roundLength, gameType, nTrials, pM, blockName, round) {
 
     let losses = 0, round = 1, streak = 0, trialNumber = 0, tooSlow = null, tooFast = null, message;
 
     let displayFeedback = (blockName == "practice") ? "hidden" : "visible"
+    let feedbackText_tokens = (blockName == "practice") ? "You succeeded!" : "+10 Tokens"
+    let feedbackText_noTokens = (blockName == "practice") ? "You failed!" : "+0 Tokens"
 
     const tokens_html =  `<div class="outcome-container">
                             <div class="current-round-text">{currentRound}</div>
                             <div class="outcome-image" style="visibility: ${displayFeedback}; color:${hex}"><img src="./img/coins.jpg" height="350px"></div>
-                            <div class="outcome-text-win" style="visibility: ${displayFeedback}; color:${hex}">+10 Tokens</div>
+                            <div class="outcome-text-win" style="color:${hex}">${feedbackText_tokens}</div>
                           </div>`;
 
     const noTokens_html = `<div class="outcome-container">
                             <div class="current-round-text">{currentRound}</div>
                             <div class="outcome-image" style="visibility: ${displayFeedback}"><img src="./img/no-coins.jpg" height="350px"></div>
-                            <div class="outcome-text-lose" style="visibility: ${displayFeedback}">+0 Tokens</div>
+                            <div class="outcome-text-lose">${feedbackText_noTokens}</div>
                           </div>`;
 
     const currentRound_html = `<div class="outcome-container">
@@ -215,7 +217,7 @@ const dmPsych = (function() {
 
     const intro = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {trial_type: 'intro', block: blockName},
+      data: {phase: 'intro', block: blockName, round: round},
       stimulus: function() {
         if (gameType == 'invStrk') {
             return `<div style='font-size:35px'><p>Get ready for the first round!</p></div>`;
@@ -236,9 +238,9 @@ const dmPsych = (function() {
 
     const iti = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {trial_type: 'iti', block: blockName},
+      data: {phase: 'iti', block: blockName, round: round},
       stimulus: () => {
-        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "You have 5 chances to activate the tile!";
+        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "Activate the tile before your 4 chances are up!";
         return currentRound_html.replace("{currentRound}", reminder).replace("{iti}", ``);;
       },
       choices: [" "],
@@ -253,10 +255,10 @@ const dmPsych = (function() {
 
     const warning = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {trial_type: 'warning', block: blockName},
+      data: {phase: 'warning', block: blockName, round: round},
       choices: "NO_KEYS",
       stimulus: () => {
-        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "You have 5 chances to activate the tile!";
+        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "Activate the tile before your 4 chances are up!";
         const message = warning_html.replace("{currentRound}", reminder);
         return (tooFast) ? message : '';
       },
@@ -274,9 +276,9 @@ const dmPsych = (function() {
 
     const probe = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {trial_type: 'probe', block: blockName},
+      data: {phase: 'probe', block: blockName, round: round},
       stimulus: () => {
-        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "You have 5 chances to activate the tile!";
+        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "Activate the tile before your 4 chances are up!";
         return probe_html.replace("{currentRound}", reminder);
       },
       choices: [" "],
@@ -284,6 +286,7 @@ const dmPsych = (function() {
         return latency[trialNumber] 
       },
       on_finish: (data) => {
+        data.probeDuration = latency[trialNumber];
         data.response ? tooSlow = 0 : tooSlow = 1;
         data.tooSlow = tooSlow;
       },
@@ -291,9 +294,9 @@ const dmPsych = (function() {
 
     const outcome = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {trial_type: `activation`, block: blockName},
+      data: {phase: `activation`, block: blockName, round: round},
       stimulus: () => {
-        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "You have 5 chances to activate the tile!";
+        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "Activate the tile before your 4 chances are up!";
         if (!tooSlow) {
           return tileHit.replace("{currentRound}", reminder);
         } else {
@@ -303,13 +306,16 @@ const dmPsych = (function() {
       choices: [" "],
       response_ends_trial: false,
       trial_duration: 1000,
+      on_finish: (data) => {
+        data.rt_adjusted = data.rt + latency[trialNumber];
+      }
     };
 
     const feedback = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {trial_type: `feedback`, block: blockName},
+      data: {phase: `feedback`, block: blockName, round: round},
       stimulus: () => {
-        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "You have 5 chances to activate the tile!";
+        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "Activate the tile before your 4 chances are up!";
         if (gameType == 'bern') {
           let nextRoundMsg = (trialNumber + 1 < nTrials) ? 'Round '+(round + 1)+' will now begin' : 'The game is now complete';
           if (tooSlow) {
@@ -1279,7 +1285,7 @@ const dmPsych = (function() {
 
       if (gameType == 'invStrk') {
           html = [`<div class='parent'>
-              <p>The Tile Game is played in multiple rounds.</p>
+              <p>The ${gameName} is played in multiple rounds.</p>
               </div>`,
 
               `<div class='parent'>
@@ -1312,7 +1318,7 @@ const dmPsych = (function() {
               </div>`,
 
               `<div class='parent'>
-              <p>To get a feel for the Tile Game, you'll complete a practice session.<br>
+              <p>To get a feel for the ${gameName}, you'll complete a practice session.<br>
               Once you proceed, the practice session will start, so get ready to press your SPACEBAR.</p>
               <p>Continue to begin practicing.</p>
               </div>`];        
@@ -1320,7 +1326,7 @@ const dmPsych = (function() {
 
       if (gameType == 'strk') {
           html = [`<div class='parent'>
-              <p>In the Tile Game, your goal is to build winning streaks.</br>
+              <p>In the ${gameName}, your goal is to build winning streaks.</br>
               A winning streak is a series of consecutive successes.</p>
               </div>`,
 
@@ -1353,7 +1359,7 @@ const dmPsych = (function() {
               </div>`,
 
               `<div class='parent'>
-              <p>To get a feel for the Tile Game, you'll complete a practice session.<br>
+              <p>To get a feel for the ${gameName}, you'll complete a practice session.<br>
               Once you proceed, the practice session will start, so get ready to press your SPACEBAR.</p>
               <p>Continue to begin practicing.</p>
               </div>`];
@@ -1388,7 +1394,7 @@ const dmPsych = (function() {
               </div>`,
 
               `<div class='parent'>
-                <p>To get a feel for the Tile Game, you'll complete a practice session.</p>
+                <p>To get a feel for the ${gameName}, you'll complete a practice session.</p>
                 <p>Remember: Your goal is to win each round by activating the tile before your ${roundLength} chances are up.</p>
                 <p>Once you proceed, the practice session will start, so get ready to press your SPACEBAR.</p>
               </div>`
@@ -1423,7 +1429,7 @@ const dmPsych = (function() {
               </div>`,
 
               `<div class='parent'>
-                <p>To get a feel for the Tile Game, you'll complete a practice session.</p>
+                <p>To get a feel for the ${gameName}, you'll complete a practice session.</p>
                 <p>Remember: Your goal is to win each round by activating the tile.</p>
                 <p>Once you proceed, the practice session will start, so get ready to press your SPACEBAR.</p>
               </div>`
@@ -1530,7 +1536,7 @@ const dmPsych = (function() {
                   </div>`,
 
                  `<div class='parent' style='text-align: left'>
-                    <p>Since the ${gameName_2} gives you five chances per round to activate the tile,<br>
+                    <p>Since the ${gameName_2} gives you four chances per round to activate the tile,<br>
                     it is easier than the ${gameName_1}.</p>
                     <p>Specifically, in the ${gameName_2}, players generally win <b>${hitRate}</b> of their rounds.</p>
                   </div>`];          

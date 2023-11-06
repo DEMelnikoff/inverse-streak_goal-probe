@@ -77,7 +77,7 @@ var exp = (function() {
 
         if (gameType == '1inN') {
             // attention check #1
-            a1 = 'Activate a tile before my five chances are up.';
+            a1 = 'Activate a tile before my four chances are up.';
             a2 = 'You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.';
             a3 = (pM == .5) ? '90% of their rounds.' : '50% of their rounds.';
         };
@@ -86,7 +86,7 @@ var exp = (function() {
             // attention check #1
             a1 = 'Activate each and every tile.';
             a2 = 'You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.';
-            a3 = (pM == .5) ? '50% of their rounds.' : '10% of their rounds.';
+            a3 = (pM == .5) ? '50% of their rounds.' : '15% of their rounds.';
         };
 
         const compChk = {
@@ -96,7 +96,7 @@ var exp = (function() {
                 {
                   prompt: `What is the goal of the ${gameName}?`, 
                   name: 'attnChk1', 
-                  options: ['Activate each and every tile.', 'Activate a tile before my five chances are up.'], 
+                  options: ['Activate each and every tile.', 'Activate a tile before my four chances are up.'], 
                   required: true
                 },
                 {
@@ -108,7 +108,7 @@ var exp = (function() {
                 {
                   prompt: `In the ${gameName}, players generally win...`, 
                   name: 'attnChk3', 
-                  options: ['10% of their rounds.', '50% of their rounds.', '90% of their rounds.'], 
+                  options: ['15% of their rounds.', '50% of their rounds.', '90% of their rounds.'], 
                   required: true
                 },
             ],
@@ -202,11 +202,11 @@ var exp = (function() {
     *
     */
 
-    p.practice1 = new dmPsych.MakeTileGame(settings.hex_1, settings.tileHit_1, settings.tileMiss, settings.roundLength, settings.gameType[0], 10, settings.pM_practice, 'practice');
+    p.practice1 = new dmPsych.MakeTileGame(settings.hex_1, settings.tileHit_1, settings.tileMiss, settings.roundLength, settings.gameType[0], 10, settings.pM_practice, 'practice', 0);
 
-    p.round1 = new dmPsych.MakeTileGame(settings.hex_1, settings.tileHit_1, settings.tileMiss, settings.roundLength, settings.gameType[0], settings.nTrials, settings.pM, 'tileGame');
+    p.round1 = new dmPsych.MakeTileGame(settings.hex_1, settings.tileHit_1, settings.tileMiss, settings.roundLength, settings.gameType[0], settings.nTrials, settings.pM, 'tileGame', 1);
 
-    p.round2 = new dmPsych.MakeTileGame(settings.hex_2, settings.tileHit_2, settings.tileMiss, settings.roundLength, settings.gameType[1], settings.nTrials, settings.pM, 'tileGame');
+    p.round2 = new dmPsych.MakeTileGame(settings.hex_2, settings.tileHit_2, settings.tileMiss, settings.roundLength, settings.gameType[1], settings.nTrials, settings.pM, 'tileGame', 2);
 
    /*
     *
@@ -219,7 +219,7 @@ var exp = (function() {
     const zeroToALot = ['0<br>A little', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10<br>A lot'];
 
     // constructor functions
-    const flowQs = function(name, blockName) {
+    const flowQs = function(name, round) {
         this.type = jsPsychSurveyLikert;
         this.preamble = `<div style='padding-top: 50px; width: 850px; font-size:16px'>
 
@@ -229,30 +229,30 @@ var exp = (function() {
         Report the degree to which you felt immersed and engaged by answering the following questions.</p></div>`;
         this.questions = [
             {prompt: `During the ${name}, how <strong>absorbed</strong> did you feel in what you were doing?`,
-            name: `absorbed_${blockName}`,
+            name: `absorbed`,
             labels: ["0<br>Not very absorbed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More absorbed than I've ever felt"]},
             {prompt: `During the ${name}, how <strong>immersed</strong> did you feel in what you were doing?`,
-            name: `immersed_${blockName}`,
+            name: `immersed`,
             labels: ["0<br>Not very immersed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More immersed than I've ever felt"]},
             {prompt: `During the ${name}, how <strong>engaged</strong> did you feel in what you were doing?`,
-            name: `engaged_${blockName}`,
+            name: `engaged`,
             labels: ["0<br>Not very engaged", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More engaged than I've ever felt"]},
             {prompt: `During the ${name}, how <strong>engrossed</strong> did you feel in what you were doing?`,
-            name: `engrossed_${blockName}`,
+            name: `engrossed`,
             labels: ["0<br>Not very engrossed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More engrossed than I've ever felt"]},
-            {prompt: `During the ${name}, how often did you find yourself wondering when the task would end?`,
-            name: `wonder_${blockName}`,
-            labels: ["0<br>Never", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>Constantly"]},
+            {prompt: `How much of your <b>conscious focus and attention</b> did the ${name} manage to capture?`,
+            name: `attention`,
+            labels: ["0%<br>None of it", '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', "100%<br>All of it"]},
         ];
         this.randomize_question_order = false;
         this.scale_width = 700;
-        this.data = {block: blockName};
+        this.data = {round: round};
         this.on_finish =(data) => {
             dmPsych.saveSurveyData(data);
         };
     };
 
-    var enjoyQs = function(name, blockName) {
+    var enjoyQs = function(name, round) {
         this.type = jsPsychSurveyLikert;
         this.preamble = `<div style='padding-top: 50px; width: 850px; font-size:16px'>
 
@@ -279,18 +279,18 @@ var exp = (function() {
         ];
         this.randomize_question_order = false;
         this.scale_width = 700;
-        this.data = {block: blockName};
+        this.data = {round: round};
         this.on_finish = (data) => {
             dmPsych.saveSurveyData(data);
         };
     };
     
     p.round1_Qs = {
-        timeline: [new flowQs(settings.gameName_1, 'game_1'), new enjoyQs(settings.gameName_1, 'game_1')]
+        timeline: [new flowQs(settings.gameName_1, 1), new enjoyQs(settings.gameName_1, 1)]
     };
 
     p.round2_Qs = {
-        timeline: [new flowQs(settings.gameName_2, 'game_2'), new enjoyQs(settings.gameName_2, 'game_2')]
+        timeline: [new flowQs(settings.gameName_2, 2), new enjoyQs(settings.gameName_2, 2)]
     };
 
     p.demographics = (function() {
@@ -305,7 +305,7 @@ var exp = (function() {
                     These are just some of the ways people might think about their task.</p>
                     <p><strong>Consider how you were thinking about your task. Which of the following statements best describes how you were thinking about your task during the Tile Game?</strong></p></div>`,
                     name: `goalRep`,
-                    options: [`For each round, I was trying to activate a tile before my five chances were up.`, `I was trying to build streaks by activing as many tiles in a row as possible.`, `I was trying to activate every single tile I saw.`],
+                    options: [`For each round, I was trying to activate a tile before my four chances were up.`, `I was trying to build streaks by activing as many tiles in a row as possible.`, `I was trying to activate every single tile I saw.`],
                     required: true,
                     horizontal: false,
                 }],
@@ -398,7 +398,7 @@ var exp = (function() {
     p.save_data = {
         type: jsPsychPipe,
         action: "save",
-        experiment_id: "IeFhSgbWPSj7",
+        experiment_id: "5gj8ihblbO0L",
         filename: dmPsych.filename,
         data_string: ()=>jsPsych.data.get().csv()
     };
