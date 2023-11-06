@@ -324,13 +324,12 @@
 
 .current-round-text {
     position: absolute; 
-    font-size: 40px;
+    font-size: 30px;
     color: black;
     top: 10%; 
     left: 50%; 
     transform: translate(-50%, -50%); 
     width: 100%;
-    font-weight: bold;
 }
 
 .iti-text {

@@ -185,13 +185,13 @@ const dmPsych = (function() {
     let displayFeedback = (blockName == "practice") ? "hidden" : "visible"
 
     const tokens_html =  `<div class="outcome-container">
-                            <div class="current-round-win" style="color:${hex}">You won Round {currentRound}!</div>
+                            <div class="current-round-text">{currentRound}</div>
                             <div class="outcome-image" style="visibility: ${displayFeedback}; color:${hex}"><img src="./img/coins.jpg" height="350px"></div>
                             <div class="outcome-text-win" style="visibility: ${displayFeedback}; color:${hex}">+10 Tokens</div>
                           </div>`;
 
     const noTokens_html = `<div class="outcome-container">
-                            <div class="current-round-lose">You lost Round {currentRound}!</div>
+                            <div class="current-round-text">{currentRound}</div>
                             <div class="outcome-image" style="visibility: ${displayFeedback}"><img src="./img/no-coins.jpg" height="350px"></div>
                             <div class="outcome-text-lose" style="visibility: ${displayFeedback}">+0 Tokens</div>
                           </div>`;
@@ -224,10 +224,10 @@ const dmPsych = (function() {
             return `<div style='font-size:35px'><p>Get ready for Round 1!</p></div>`;
         };
         if (gameType == 'strk') {
-            return `<div style='font-size:35px'><p>Get ready for the first tile!</p></div>`;
+            return `<div style='font-size:35px'><p>Get ready for Round 1!</p></div>`;
         };
         if (gameType == 'bern') {
-            return `<div style='font-size:35px'><p>Get ready for the first tile!</p></div>`;
+            return `<div style='font-size:35px'><p>Get ready for Round 1!</p></div>`;
         };
       },
       choices: "NO_KEYS",
@@ -238,7 +238,8 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {trial_type: 'iti', block: blockName},
       stimulus: () => {
-        return currentRound_html.replace("{currentRound}", `Round ${round}`).replace("{iti}", ``);;
+        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "You have 5 chances to activate the tile!";
+        return currentRound_html.replace("{currentRound}", reminder).replace("{iti}", ``);;
       },
       choices: [" "],
       trial_duration: () => {
@@ -255,7 +256,8 @@ const dmPsych = (function() {
       data: {trial_type: 'warning', block: blockName},
       choices: "NO_KEYS",
       stimulus: () => {
-        const message = warning_html.replace("{currentRound}", `Round ${round}`);
+        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "You have 5 chances to activate the tile!";
+        const message = warning_html.replace("{currentRound}", reminder);
         return (tooFast) ? message : '';
       },
       trial_duration: () => {
@@ -274,7 +276,8 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {trial_type: 'probe', block: blockName},
       stimulus: () => {
-        return probe_html.replace("{currentRound}", `Round ${round}`);
+        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "You have 5 chances to activate the tile!";
+        return probe_html.replace("{currentRound}", reminder);
       },
       choices: [" "],
       trial_duration: () => { 
@@ -290,10 +293,11 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {trial_type: `activation`, block: blockName},
       stimulus: () => {
+        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "You have 5 chances to activate the tile!";
         if (!tooSlow) {
-          return tileHit.replace("{currentRound}", `Round ${round}`);
+          return tileHit.replace("{currentRound}", reminder);
         } else {
-          return tileMiss.replace("{currentRound}", `Round ${round}`);
+          return tileMiss.replace("{currentRound}", reminder);
         }
       },
       choices: [" "],
@@ -305,13 +309,14 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {trial_type: `feedback`, block: blockName},
       stimulus: () => {
+        const reminder = (gameType == "bern") ? "Activate each and every tile!" : "You have 5 chances to activate the tile!";
         if (gameType == 'bern') {
           let nextRoundMsg = (trialNumber + 1 < nTrials) ? 'Round '+(round + 1)+' will now begin' : 'The game is now complete';
           if (tooSlow) {
-            message = noTokens_html.replace("{currentRound}", `${round}`);
+            message = noTokens_html.replace("{currentRound}", reminder);
             round++;          
           } else {
-            message = tokens_html.replace("{currentRound}", `${round}`);
+            message = tokens_html.replace("{currentRound}", reminder);
             round++;          
           };
           return message;
@@ -321,14 +326,14 @@ const dmPsych = (function() {
           if (tooSlow && losses < 4) {
             losses++;
             let tryOrTries = (losses == 4) ? "try" : "tries"
-            message = currentRound_html.replace("{currentRound}", `Round ${round}`).replace("{iti}", ``);
+            message = currentRound_html.replace("{currentRound}", reminder).replace("{iti}", ``);
           } else if (tooSlow && losses == roundLength - 1) {
             losses = 0;
-            message = noTokens_html.replace("{currentRound}", `${round}`);
+            message = noTokens_html.replace("{currentRound}", '');
             round++;
           } else {
             losses = 0;
-            message = tokens_html.replace("{currentRound}", `${round}`);
+            message = tokens_html.replace("{currentRound}", '');
             round++;
           };
           return message;
@@ -1508,7 +1513,6 @@ const dmPsych = (function() {
 
                   `<div class='parent' style='height: 550px'>
                     <p>If you lose a round, you'll see a message like this one indicating that you earned 0 tokens.</p>
-                    <div class="current-round-lose" style="top:20%">You lost Round 5!</div>
                     <div class="outcome-image" style="top:60%"><img src="./img/no-coins.jpg" height="350px"></div>
                     <div class="outcome-text-lose" style="top:60%">+0 Tokens</div>
                   </div>`,
@@ -1557,7 +1561,6 @@ const dmPsych = (function() {
 
                 `<div class='parent' style='height: 550px'>
                   <p>If you lose a round, you'll see a message like this one indicating that you earned 0 tokens.</p>
-                  <div class="current-round-lose" style="top:20%">You lost Round 5!</div>
                   <div class="outcome-image" style="top:60%"><img src="./img/no-coins.jpg" height="350px"></div>
                   <div class="outcome-text-lose" style="top:60%">+0 Tokens</div>
                 </div>`,

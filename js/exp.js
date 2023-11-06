@@ -215,8 +215,8 @@ var exp = (function() {
     */
 
     // scales
-    var zeroToExtremely = ['0<br>A little', '1', '2', '3', '4', '5', '6', '7', '8<br>Extremely'];
-    var zeroToALot = ['0<br>A little', '1', '2', '3', '4', '5', '6', '7', '8<br>A lot'];
+    const zeroToExtremely = ["0<br>A little", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>Extremely"];
+    const zeroToALot = ['0<br>A little', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10<br>A lot'];
 
     // constructor functions
     const flowQs = function(name, blockName) {
@@ -228,21 +228,24 @@ var exp = (function() {
         <p>During the ${name}, to what extent did you feel immersed and engaged in what you were doing?<br>
         Report the degree to which you felt immersed and engaged by answering the following questions.</p></div>`;
         this.questions = [
-            {prompt: `During the ${name}, to what extent did you feel <strong>absorbed</strong> in what you were doing?`,
-            name: `absorbed`,
-            labels: zeroToExtremely},
-            {prompt: `During the ${name}, to what extent did you feel <strong>immersed</strong> in what you were doing?`,
-            name: `immersed`,
-            labels: zeroToExtremely},
-            {prompt: `During the ${name}, to what extent did you feel <strong>engaged</strong> in what you were doing?`,
-            name: `engaged`,
-            labels: zeroToExtremely},
-            {prompt: `During the ${name}, to what extent did you feel <strong>engrossed</strong> in what you were doing?`,
-            name: `engrossed`,
-            labels: zeroToExtremely},
+            {prompt: `During the ${name}, how <strong>absorbed</strong> did you feel in what you were doing?`,
+            name: `absorbed_${blockName}`,
+            labels: ["0<br>Not very absorbed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More absorbed than I've ever felt"]},
+            {prompt: `During the ${name}, how <strong>immersed</strong> did you feel in what you were doing?`,
+            name: `immersed_${blockName}`,
+            labels: ["0<br>Not very immersed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More immersed than I've ever felt"]},
+            {prompt: `During the ${name}, how <strong>engaged</strong> did you feel in what you were doing?`,
+            name: `engaged_${blockName}`,
+            labels: ["0<br>Not very engaged", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More engaged than I've ever felt"]},
+            {prompt: `During the ${name}, how <strong>engrossed</strong> did you feel in what you were doing?`,
+            name: `engrossed_${blockName}`,
+            labels: ["0<br>Not very engrossed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More engrossed than I've ever felt"]},
+            {prompt: `During the ${name}, how often did you find yourself wondering when the task would end?`,
+            name: `wonder_${blockName}`,
+            labels: ["0<br>Never", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>Constantly"]},
         ];
         this.randomize_question_order = false;
-        this.scale_width = 500;
+        this.scale_width = 700;
         this.data = {block: blockName};
         this.on_finish =(data) => {
             dmPsych.saveSurveyData(data);
@@ -275,7 +278,7 @@ var exp = (function() {
             labels: zeroToExtremely},
         ];
         this.randomize_question_order = false;
-        this.scale_width = 500;
+        this.scale_width = 700;
         this.data = {block: blockName};
         this.on_finish = (data) => {
             dmPsych.saveSurveyData(data);
@@ -378,7 +381,7 @@ var exp = (function() {
 
 
         const demos = {
-            timeline: [goalProbe, demosIntro, gender, age, ethnicity, english, finalWord]
+            timeline: [demosIntro, gender, age, ethnicity, english, finalWord]
         };
 
         return demos;
