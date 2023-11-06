@@ -6,12 +6,12 @@ var exp = (function() {
     const colorOrder = Math.floor(Math.random() * 2);
 
     const settings = {
-        pM: [.5, .13][Math.floor(Math.random()*2)],
+        pM: [.5, .16][Math.floor(Math.random()*2)],
         pM_practice: .32,
         gameType: [['1inN', 'bern'], ['bern', '1inN']][Math.floor(Math.random()*2)],
-        nTrials: 62,
+        nTrials: 50,
         basePay: 2.50,
-        roundLength: 5,
+        roundLength: 4,
         hex_1: ['#00aa00', '#1067e8'][colorOrder],
         hex_2: ['#00aa00', '#1067e8'][1 - colorOrder],
         gameName_1: ['<span style="color: #00aa00; font-weight: bold">Green Game</span>', '<span style="color: #1067e8; font-weight: bold">Blue Game</span>'][colorOrder],
