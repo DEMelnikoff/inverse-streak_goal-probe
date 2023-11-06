@@ -183,7 +183,7 @@ const dmPsych = (function() {
   };
 
   // create tile game
-  obj.MakeTileGame = function(hex, tileHit, tileMiss, roundLength, gameType, nTrials, pM, blockName, round) {
+  obj.MakeTileGame = function(hex, tileHit, tileMiss, roundLength, gameType, nTrials, pM, blockName, roundNum) {
 
     let losses = 0, round = 1, streak = 0, trialNumber = 0, tooSlow = null, tooFast = null, message;
 
@@ -222,7 +222,7 @@ const dmPsych = (function() {
 
     const intro = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {phase: 'intro', block: blockName, round: round},
+      data: {phase: 'intro', block: blockName, round: roundNum},
       stimulus: function() {
         if (gameType == 'invStrk') {
             return `<div style='font-size:35px'><p>Get ready for the first round!</p></div>`;
@@ -243,7 +243,7 @@ const dmPsych = (function() {
 
     const iti = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {phase: 'iti', block: blockName, round: round},
+      data: {phase: 'iti', block: blockName, round: roundNum},
       stimulus: () => {
         const reminder = (gameType == "bern") ? "Activate each and every tile!" : "Activate the tile before your 4 chances are up!";
         return currentRound_html.replace("{currentRound}", reminder).replace("{iti}", ``);;
@@ -260,7 +260,7 @@ const dmPsych = (function() {
 
     const warning = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {phase: 'warning', block: blockName, round: round},
+      data: {phase: 'warning', block: blockName, round: roundNum},
       choices: "NO_KEYS",
       stimulus: () => {
         const reminder = (gameType == "bern") ? "Activate each and every tile!" : "Activate the tile before your 4 chances are up!";
@@ -281,7 +281,7 @@ const dmPsych = (function() {
 
     const probe = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {phase: 'probe', block: blockName, round: round},
+      data: {phase: 'probe', block: blockName, round: roundNum},
       stimulus: () => {
         const reminder = (gameType == "bern") ? "Activate each and every tile!" : "Activate the tile before your 4 chances are up!";
         return probe_html.replace("{currentRound}", reminder);
@@ -299,7 +299,7 @@ const dmPsych = (function() {
 
     const outcome = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {phase: `activation`, block: blockName, round: round},
+      data: {phase: `activation`, block: blockName, round: roundNum},
       stimulus: () => {
         const reminder = (gameType == "bern") ? "Activate each and every tile!" : "Activate the tile before your 4 chances are up!";
         if (!tooSlow) {
@@ -318,7 +318,7 @@ const dmPsych = (function() {
 
     const feedback = {
       type: jsPsychHtmlKeyboardResponse,
-      data: {phase: `feedback`, block: blockName, round: round},
+      data: {phase: `feedback`, block: blockName, round: roundNum},
       stimulus: () => {
         const reminder = (gameType == "bern") ? "Activate each and every tile!" : "Activate the tile before your 4 chances are up!";
         if (gameType == 'bern') {
@@ -334,9 +334,9 @@ const dmPsych = (function() {
         }; 
         if (gameType == '1inN') {
           let nextRoundMsg = (trialNumber + 1 < nTrials) ? 'Round '+(round + 1)+' will now begin' : 'The game is now complete';
-          if (tooSlow && losses < 4) {
+          if (tooSlow && losses < 3) {
             losses++;
-            let tryOrTries = (losses == 4) ? "try" : "tries"
+            let tryOrTries = (losses == 3) ? "try" : "tries"
             message = currentRound_html.replace("{currentRound}", reminder).replace("{iti}", ``);
           } else if (tooSlow && losses == roundLength - 1) {
             losses = 0;
@@ -1256,7 +1256,7 @@ const dmPsych = (function() {
         You are invited to participate in a research study designed to examine judgment and decision-making.</p>
 
         <p><b>Procedures:</b><br>
-        If you agree to take part, your participation in this study will involve answering a series of questions as well as making choices between different options that will be presented to you as part of study activities. We anticipate that your involvement will require 12-15 minutes.</p>
+        If you agree to take part, your participation in this study will involve answering a series of questions as well as making choices between different options that will be presented to you as part of study activities. We anticipate that your involvement will require 13-16 minutes.</p>
 
         <p><b>Compensation:</b><br>
         You'll receive $${basePay} in exchange for your participation.</p>
@@ -1549,7 +1549,7 @@ const dmPsych = (function() {
       };
 
       if (gameType == 'bern') {
-        const hitRate = (pM == .5) ? "50%" : "10%";
+        const hitRate = (pM == .5) ? "50%" : "15%";
         const difficulty = (pM == .5) ? "moderately difficult" : "very difficult";
         if (round == 1) {
           html = [`<div class='parent'>

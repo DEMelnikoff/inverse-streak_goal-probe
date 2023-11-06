@@ -10,7 +10,7 @@ var exp = (function() {
         pM_practice: .32,
         gameType: [['1inN', 'bern'], ['bern', '1inN']][Math.floor(Math.random()*2)],
         nTrials: 50,
-        basePay: 2.50,
+        basePay: 3.00,
         roundLength: 4,
         hex_1: ['#00aa00', '#1067e8'][colorOrder],
         hex_2: ['#00aa00', '#1067e8'][1 - colorOrder],
