@@ -1506,7 +1506,6 @@ const dmPsych = (function() {
 
                   `<div class='parent' style='height: 550px'>
                     <p>If you win a round, you'll see a message like this one indicating that you earned 10 tokens.</p>                
-                    <div class="current-round-win" style="top:20%; color:${hex}">You won Round 5!</div>
                     <div class="outcome-image" style="top:60%"><img src="./img/coins.jpg" height="350px"></div>
                     <div class="outcome-text-win" style="top:60%; color:${hex}">+10 Tokens</div>
                   </div>`,
@@ -1554,7 +1553,6 @@ const dmPsych = (function() {
 
                 `<div class='parent' style='height: 550px'>
                   <p>If you win a round, you'll see a message like this one indicating that you earned 10 tokens.</p>                
-                  <div class="current-round-win" style="top:20%; color:${hex}">You won Round 5!</div>
                   <div class="outcome-image" style="top:60%"><img src="./img/coins.jpg" height="350px"></div>
                   <div class="outcome-text-win" style="top:60%; color:${hex}">+10 Tokens</div>
                 </div>`,
