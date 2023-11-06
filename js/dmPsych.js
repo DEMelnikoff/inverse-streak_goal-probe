@@ -16,7 +16,6 @@ const dmPsych = (function() {
       let totalMisses = jsPsych.data.get().filter({phase: 'probe', block: 'tileGame'}).select('tooSlow').sum();
       let totalHits = 100 - totalMisses;
       let totalTokens = totalHits * 10;
-      console.log(totalMisses, totalHits);
       if(!boot) {
         document.body.innerHTML = 
         `<div align='center' style="margin: 10%">

@@ -19,7 +19,6 @@ var exp = (function() {
         color_1: ['<span style="color: #00aa00; font-weight: bold">green</span>', '<span style="color: #1067e8; font-weight: bold">blue</span>'][colorOrder],
         color_2: ['<span style="color: #00aa00; font-weight: bold">green</span>', '<span style="color: #1067e8; font-weight: bold">blue</span>'][1 - colorOrder],
     };
-    console.log(settings.gameType, settings.pM);
 
     settings.tileHit_1 = `<div class="outcome-container">
                             <div class="current-round-text">{currentRound}</div>
