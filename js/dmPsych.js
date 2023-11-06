@@ -13,11 +13,16 @@ const dmPsych = (function() {
   window.jsPsych = initJsPsych({
     on_finish: () => {
       let boot = jsPsych.data.get().last(1).select('boot').values[0];
+      let totalMisses = jsPsych.data.get().filter({phase: 'probe', block: 'tileGame'}).select('tooSlow').sum();
+      let totalHits = 100 - totalMisses;
+      let totalTokens = totalHits * 10;
+      console.log(totalMisses, totalHits);
       if(!boot) {
         document.body.innerHTML = 
         `<div align='center' style="margin: 10%">
-            <p>Thank you for participating!</p>
-            <p><b>To receive payment, please wait while we redirect you to Prolific.</b></p>
+          <p>Thank you for participating!</p>
+          <p>In total, you won <b>${totalTokens}</b> tokens! Within one week, you'll find out if you won the $100.00 bonus.</p>
+          <p><b>To receive payment, please wait to be re-directed to Prolific.</b></p>
         </div>`;
         setTimeout(() => { location.href = `https://app.prolific.co/submissions/complete?cc=${completionCode}` }, 4000);
       }
@@ -33,7 +38,7 @@ const dmPsych = (function() {
   obj.filename = `${subject_id}.csv`;
 
   // define completion code for Prolific
-  const completionCode = "C1ACNNE6";
+  const completionCode = "C1B3XSBB";
 
   // track fps
   let frames = 0, tic = performance.now(), fpsAdjust;
