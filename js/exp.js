@@ -20,6 +20,7 @@ var exp = (function() {
         color_2: ['<span style="color: #00aa00; font-weight: bold">green</span>', '<span style="color: #1067e8; font-weight: bold">blue</span>'][1 - colorOrder],
     };
 
+    console.log(settings.gameType, settings.pM)
     settings.tileHit_1 = `<div class="outcome-container">
                             <div class="current-round-text">{currentRound}</div>
                             <div class="box" style="background-color:${settings.hex_1}"></div>
@@ -38,7 +39,8 @@ var exp = (function() {
     // save condition and URL data
     jsPsych.data.addProperties({
         pM: settings.pM,
-        gameType: settings.gameType,
+        gameType_1: settings.gameType[0],
+        gameType_2: settings.gameType[1],
         basePay: settings.basePay,
         startTime: String(new Date()),
     });
@@ -218,47 +220,16 @@ var exp = (function() {
     const zeroToALot = ['0<br>A little', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10<br>A lot'];
 
     // constructor functions
-    const flowQs = function(name, round) {
-        this.type = jsPsychSurveyLikert;
-        this.preamble = `<div style='padding-top: 50px; width: 850px; font-size:16px'>
 
-        <p>Thank you for completing the ${name}!</p>
-
-        <p>During the ${name}, to what extent did you feel immersed and engaged in what you were doing?<br>
-        Report the degree to which you felt immersed and engaged by answering the following questions.</p></div>`;
-        this.questions = [
-            {prompt: `During the ${name}, how <strong>absorbed</strong> did you feel in what you were doing?`,
-            name: `absorbed`,
-            labels: ["0<br>Not very absorbed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More absorbed than I've ever felt"]},
-            {prompt: `During the ${name}, how <strong>immersed</strong> did you feel in what you were doing?`,
-            name: `immersed`,
-            labels: ["0<br>Not very immersed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More immersed than I've ever felt"]},
-            {prompt: `During the ${name}, how <strong>engaged</strong> did you feel in what you were doing?`,
-            name: `engaged`,
-            labels: ["0<br>Not very engaged", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More engaged than I've ever felt"]},
-            {prompt: `During the ${name}, how <strong>engrossed</strong> did you feel in what you were doing?`,
-            name: `engrossed`,
-            labels: ["0<br>Not very engrossed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More engrossed than I've ever felt"]},
-            {prompt: `How much of your <b>conscious focus and attention</b> did the ${name} manage to capture?`,
-            name: `attention`,
-            labels: ["0%<br>None of it", '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', "100%<br>All of it"]},
-        ];
-        this.randomize_question_order = false;
-        this.scale_width = 700;
-        this.data = {round: round};
-        this.on_finish =(data) => {
-            dmPsych.saveSurveyData(data);
-        };
-    };
 
     var enjoyQs = function(name, round) {
         this.type = jsPsychSurveyLikert;
         this.preamble = `<div style='padding-top: 50px; width: 850px; font-size:16px'>
 
-        <p>Below are a few more questions about the ${name}.</p>
+        <p>Thank you for completing the ${name}!</p>
 
-        <p>Instead of asking about immersion and engagement, these questions ask about <strong>enjoyment</strong>.<br>
-        Report how much you <strong>enjoyed</strong> the ${name} by answering the following questions.</p></div>`;
+        <p>How much did you enjoy the ${name}?<br>
+        Report the degree to which you enjoyed the ${name} by answering the following questions.</p></div>`;
         this.questions = [
             {prompt: `How much did you <strong>enjoy</strong> playing the ${name}?`,
             name: `enjoyable`,
@@ -283,13 +254,49 @@ var exp = (function() {
             dmPsych.saveSurveyData(data);
         };
     };
+
+    const flowQs = function(name, round) {
+        this.type = jsPsychSurveyLikert;
+        this.preamble = `<div style='padding-top: 50px; width: 850px; font-size:16px'>
+
+        <p>Below are a few more questions about the ${name}.</p>
+
+        <p>These questions are <b>not</b> about enjoyment. Instead, they ask how <b>immersed and engeged</b> you were.</p>
+        During the ${name}, were you so "in the zone" and "locked in" that you lost yourself in what you were doing?<br>
+        Or were you bored, frustrated, or otherwise distracted?</p>
+
+        <p>Report how immersed and engaged you were by answering the following questions.</p></div>`;
+        this.questions = [
+            {prompt: `During the ${name}, how <strong>absorbed</strong> did you feel in what you were doing?`,
+            name: `absorbed`,
+            labels: ["0<br>Not very absorbed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More absorbed than I've ever felt"]},
+            {prompt: `During the ${name}, how <strong>immersed</strong> did you feel in what you were doing?`,
+            name: `immersed`,
+            labels: ["0<br>Not very immersed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More immersed than I've ever felt"]},
+            {prompt: `During the ${name}, how <strong>engaged</strong> did you feel in what you were doing?`,
+            name: `engaged`,
+            labels: ["0<br>Not very engaged", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More engaged than I've ever felt"]},
+            {prompt: `During the ${name}, how <strong>engrossed</strong> did you feel in what you were doing?`,
+            name: `engrossed`,
+            labels: ["0<br>Not very engrossed", '1', '2', '3', '4', '5', '6', '7', '8', '9', "10<br>More engrossed than I've ever felt"]},
+            {prompt: `How much of your <b>conscious focus and attention</b> did the ${name} manage to capture?`,
+            name: `attention`,
+            labels: ["0%<br>None of it", '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', "100%<br>All of it"]},
+        ];
+        this.randomize_question_order = false;
+        this.scale_width = 700;
+        this.data = {round: round};
+        this.on_finish =(data) => {
+            dmPsych.saveSurveyData(data);
+        };
+    };
     
     p.round1_Qs = {
-        timeline: [new flowQs(settings.gameName_1, 1), new enjoyQs(settings.gameName_1, 1)]
+        timeline: [new enjoyQs(settings.gameName_1, 1), new flowQs(settings.gameName_1, 1)]
     };
 
     p.round2_Qs = {
-        timeline: [new flowQs(settings.gameName_2, 2), new enjoyQs(settings.gameName_2, 2)]
+        timeline: [new enjoyQs(settings.gameName_2, 2), new flowQs(settings.gameName_2, 2)]
     };
 
     p.demographics = (function() {
