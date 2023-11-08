@@ -297,6 +297,30 @@
     text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
 }
 
+.bonus-text {
+    position: absolute; 
+    font-size: 70px;
+    color: yellow;
+    top: 60%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 100%;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
+}
+
+.penalty-text {
+    position: absolute; 
+    font-size: 70px;
+    color: red;
+    top: 60%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 100%;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
+}
+
 .header-win {
     position: absolute; 
     font-size: 40px;

@@ -6,9 +6,9 @@ var exp = (function() {
     const colorOrder = Math.floor(Math.random() * 2);
 
     const settings = {
-        pM: [.84, .16][Math.floor(Math.random()*2)],
+        pM: [.5, .9][Math.floor(Math.random()*2)],
         pM_practice: .5,
-        gameType: [['1inN', 'bern'], ['bern', '1inN']][Math.floor(Math.random()*2)],
+        gameType: [['bern', 'bern'], ['bern', 'bern']][Math.floor(Math.random()*2)],
         nTrials: 50,
         basePay: 3.00,
         roundLength: 4,

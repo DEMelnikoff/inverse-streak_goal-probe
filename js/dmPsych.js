@@ -190,14 +190,42 @@ const dmPsych = (function() {
 
     const tokens_html =  `<div class="outcome-container">
                             <div class="header-win" style="color:${hex}">{header}</div>
-                            <div class="token-image" style="visibility: ${displayFeedback}"><img src="./img/coins.jpg" height="350px"></div>
+                            <div class="token-image" style="visibility: hidden"><img src="./img/coins.jpg" height="350px"></div>
                             <div class="token-text-win" style="visibility: ${displayFeedback}; color:${hex}">+10 Tokens</div>
+                          </div>`;
+
+    const tokens_bonus_html =  `<div class="outcome-container">
+                            <div class="header-win" style="color:${hex}">{header}</div>
+                            <div class="token-image" style="visibility: hidden"><img src="./img/coins.jpg" height="350px"></div>
+                            <div class="token-text-win" style="visibility: ${displayFeedback}; color:${hex}; top:40%">+10 Tokens</div>
+                            <div class="bonus-text" style="visibility: ${displayFeedback}">+5 Bonus</div>
+                          </div>`;
+
+    const tokens_penalty_html =  `<div class="outcome-container">
+                            <div class="header-win" style="color:${hex}">{header}</div>
+                            <div class="token-image" style="visibility: hidden"><img src="./img/coins.jpg" height="350px"></div>
+                            <div class="token-text-win" style="visibility: ${displayFeedback}; color:${hex}; top:40%">+10 Tokens</div>
+                            <div class="penalty-text" style="visibility: ${displayFeedback}">-5 Deduction</div>
                           </div>`;
 
     const noTokens_html = `<div class="outcome-container">
                             <div class="header-lose">{header}</div>
-                            <div class="token-image" style="visibility: ${displayFeedback}"><img src="./img/no-coins.jpg" height="350px"></div>
+                            <div class="token-image" style="visibility: hidden"><img src="./img/no-coins.jpg" height="350px"></div>
                             <div class="token-text-lose" style="visibility: ${displayFeedback}">+0 Tokens</div>
+                          </div>`;
+
+    const noTokens_bonus_html = `<div class="outcome-container">
+                            <div class="header-lose">{header}</div>
+                            <div class="token-image" style="visibility: hidden"><img src="./img/no-coins.jpg" height="350px"></div>
+                            <div class="token-text-lose" style="visibility: ${displayFeedback}; top:40%">+0 Tokens</div>
+                            <div class="bonus-text" style="visibility: ${displayFeedback}">+5 Bonus</div>
+                          </div>`;
+
+    const noTokens_penalty_html = `<div class="outcome-container">
+                            <div class="header-lose">{header}</div>
+                            <div class="token-image" style="visibility: hidden"><img src="./img/no-coins.jpg" height="350px"></div>
+                            <div class="token-text-lose" style="visibility: ${displayFeedback}; top:40%">+0 Tokens</div>
+                            <div class="penalty-text" style="visibility: ${displayFeedback}">-5 Deduction</div>
                           </div>`;
 
     const currentRound_html = `<div class="outcome-container">
@@ -216,7 +244,7 @@ const dmPsych = (function() {
                           </div>`;
 
 
-    const latency = dmPsych.makeRT(nTrials, pM, roundLength);
+    const latency = dmPsych.makeRT(nTrials, pM, roundLength, gameType);
 
     const intro = {
       type: jsPsychHtmlKeyboardResponse,
@@ -243,7 +271,7 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {phase: 'iti', block: blockName, round: roundNum},
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win each round!";
+        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win the round!";
         return currentRound_html.replace("{header}", header).replace("{iti}", ``);;
       },
       choices: [" "],
@@ -262,7 +290,7 @@ const dmPsych = (function() {
       data: {phase: 'warning', block: blockName, round: roundNum},
       choices: "NO_KEYS",
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win each round!";
+        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win the round!";
         const message = warning_html.replace("{header}", header);
         return (tooFast) ? message : '';
       },
@@ -282,7 +310,7 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {phase: 'probe', block: blockName, round: roundNum},
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win each round!";
+        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win the round!";
         return probe_html.replace("{header}", header);
       },
       choices: [" "],
@@ -301,7 +329,7 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {phase: `activation`, block: blockName, round: roundNum},
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win each round!";
+        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win the round!";
         if (!tooSlow) {
           return tileHit.replace("{header}", header);
         } else {
@@ -322,12 +350,14 @@ const dmPsych = (function() {
       stimulus: () => {
         if (gameType == 'bern') {
           if (tooSlow) {
-            let header = "You lost";      
-            message = noTokens_html.replace("{header}", header);
+            let header = "You lost";
+            message = [noTokens_html, noTokens_html, noTokens_bonus_html][Math.floor(Math.random() * 3)]; 
+            message = message.replace("{header}", header);
             round++;          
           } else {
             let header = "You won!";
-            message = tokens_html.replace("{header}", header);
+            message = [tokens_html, tokens_html, tokens_bonus_html][Math.floor(Math.random() * 3)]; 
+            message = message.replace("{header}", header);
             round++;          
           };
           return message;
@@ -408,62 +438,40 @@ const dmPsych = (function() {
   };
 
   // make n-dimensional array of RTs given p(hit) = p
-  obj.makeRT = function(n, p, roundLength) {
+  obj.makeRT = function(nTrials, pWin, pBonus, roundLength, gameType) {
 
-    const nDraws = Math.floor(n * p);  // set number of draws from geometric distribution
-    const maxWinStrk = Math.ceil((nDraws*1.5)/(n-nDraws));  // set length of longest win streak at the trial level
-    const maxLossStrk = Math.ceil(((n-nDraws)*1.5)/(nDraws*roundLength));  // set length of longest losing streak at chunk level
-    let geoms = [];  // random draws from geometric distribution
-    let rt = [];  // array of RTs
-    let nTrials = 0;  // count total numeber of trials
-    let winStrkPass = true;  // flag for passing the max win streak condition
-    let lossStrkPass = true;  // flag for passing the max loss streak condition
-    let nLossTot = 0;  // count total numeber of losses
+    // get number of wins, losses, bonus, and non-bonus trials
+    const nWins = Math.round(10 * pWin);
+    const nLoss = 10 - nWins;
+    const nBonus = Math.round(nTrials * pBonus);
+    const nNoBonus = nTrials - nBonus;
 
-    /* 
+    // create array of 10 wins and losses
+    const winsArray = Array(nWins).fill(750);
+    const lossArray = Array(nLoss).fill(200);
+    const rtArray_10 = winsArray.concat(lossArray);
 
-    Create random vector of n trial outcomes with following conditions:
-      - total number of trial-level losses = n - nDraws
-      - total number of trials = n
-      - first and last trials are losses
-      - max win streak at the trial level is <= maxWinStrk
-      - max loss streak at the chunk level is <= maxLossStrk
+    // create array of 10 bonuses and non-bonuses
+    const bonusArray = Array(nBonus).fill("bonus");
+    const noBonusArray = Array(nNoBonus).fill("no-bonus");
+    const bonusArray_10 = bonusArray.concat(noBonusArray);
 
-    */
+    
 
-    do {
-      geoms = [];
-      winStrkPass = true;
-      lossStrkPass = true;
+    const lastRT = (gameType == "strk") ? 200 : 750;
+    let rtArray = [];
+    let bonusArray = [];
 
-      // make n * p random draws from geometric distribution
-      for (let i = 0; i < nDraws; i++) {
-        let probDraw = (Math.random() * .998) + .001;
-        let geomDraw = Math.floor(Math.log(1 - probDraw) / Math.log(1 - p));
-        geoms.push(geomDraw);
-      }
-
-      // get longest losing streak at the chunk level
-      let nLoss = geoms.map(x => Math.floor(x/roundLength));  // number of chunk-level losses in a row per geom draw
-      if (Math.max(...nLoss) > maxLossStrk) { lossStrkPass = false };
-
-      // get longest winning streak at the trial level
-      for (let i = maxWinStrk; i <= nDraws; i++) {
-        let geomSlice = geoms.slice(i - maxWinStrk, i);
-        if (geomSlice.every(x => x == 0)) { winStrkPass = false };
+    while (rtArray[nTrials - 1] !== lastRT) {
+      rtArray = []
+      for (let i = 0; i < nTrials / 10; i++) {
+        let rtArray_10_shuffled = jsPsych.randomization.repeat(rtArray_10, 1);
+        rtArray.push(...rtArray_10_shuffled);
       };
+    };
 
-      nTrials = geoms.reduce((x, y) => x + y, 0) + geoms.length;  // compute total number of trials
-      nLossTot = geoms.reduce((x, y) => x + y, 0);  // get total number of losses
-
-    } while (nTrials !== n || !winStrkPass || !lossStrkPass || nLossTot !== (n - nDraws) || geoms[0] == 0);
-
-    for (let i = 0; i < geoms.length; i++) {
-      rt.push(...Array(geoms[i]).fill(220));
-      rt.push(750);
-    }
-
-    return rt;
+    console.log(rtArray);
+    return rtArray;
 
   };
 
