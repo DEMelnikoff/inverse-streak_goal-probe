@@ -6,8 +6,8 @@ var exp = (function() {
     const colorOrder = Math.floor(Math.random() * 2);
 
     const settings = {
-        pM: [.5, .16][Math.floor(Math.random()*2)],
-        pM_practice: .32,
+        pM: [.84, .16][Math.floor(Math.random()*2)],
+        pM_practice: .5,
         gameType: [['1inN', 'bern'], ['bern', '1inN']][Math.floor(Math.random()*2)],
         nTrials: 50,
         basePay: 3.00,
@@ -22,17 +22,17 @@ var exp = (function() {
 
     console.log(settings.gameType, settings.pM)
     settings.tileHit_1 = `<div class="outcome-container">
-                            <div class="current-round-text">{currentRound}</div>
+                            <div class="header">{header}</div>
                             <div class="box" style="background-color:${settings.hex_1}"></div>
                         </div>`;
 
     settings.tileHit_2 = `<div class="outcome-container">
-                            <div class="current-round-text">{currentRound}</div>
+                            <div class="header">{header}</div>
                             <div class="box" style="background-color:${settings.hex_2}"></div>
                         </div>`;
 
     settings.tileMiss = `<div class="outcome-container">
-                            <div class="current-round-text">{currentRound}</div>
+                            <div class="header">{header}</div>
                             <div class="box" style="background-color:white"></div>
                         </div>`;
 
@@ -72,8 +72,9 @@ var exp = (function() {
 
         if (gameType == 'strk') {
             // attention check #1
-            a1 = 'Activate the tile as many times in a row as possible';
+            a1 = 'Activate each and every tile.';
             a2 = 'You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.';
+            a3 = (pM == .5) ? '50% of their rounds.' : '15% of their rounds.';
         };
 
         if (gameType == '1inN') {

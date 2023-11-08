@@ -266,7 +266,7 @@
     color: black; 
 }
 
-.outcome-image {
+.token-image {
     position: absolute; 
     top: 50%; 
     left: 50%; 
@@ -274,10 +274,9 @@
     width: 100%;
 }
 
-.outcome-text-win {
+.token-text-win {
     position: absolute; 
     font-size: 70px;
-    color: #00aa00;
     top: 50%; 
     left: 50%; 
     transform: translate(-50%, -50%); 
@@ -286,7 +285,7 @@
     text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
 }
 
-.outcome-text-lose {
+.token-text-lose {
     position: absolute; 
     font-size: 70px;
     color: #a9a9a9;
@@ -298,19 +297,17 @@
     text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
 }
 
-.current-round-win {
+.header-win {
     position: absolute; 
     font-size: 40px;
-    color: #00aa00;
     top: 10%; 
     left: 50%; 
     transform: translate(-50%, -50%); 
     width: 100%;
-    font-weight: bold;
     text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
 }
 
-.current-round-lose {
+.header-lose {
     position: absolute; 
     font-size: 40px;
     color: #a9a9a9;
@@ -318,13 +315,12 @@
     left: 50%; 
     transform: translate(-50%, -50%); 
     width: 100%;
-    font-weight: bold;
     text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
 }
 
-.current-round-text {
+.header {
     position: absolute; 
-    font-size: 25px;
+    font-size: 35px;
     color: black;
     top: 10%; 
     left: 50%; 
