@@ -6,9 +6,15 @@ var exp = (function() {
     const colorOrder = Math.floor(Math.random() * 2);
 
     const settings = {
+<<<<<<< Updated upstream
         pM: [.5, .9][Math.floor(Math.random()*2)],
         pM_practice: .5,
         gameType: [['bern', 'bern'], ['bern', 'bern']][Math.floor(Math.random()*2)],
+=======
+        pM: [.84, .16][Math.floor(Math.random()*2)],
+        pM_practice: .32,
+        gameType: [['1inN', 'bern'], ['bern', '1inN']][Math.floor(Math.random()*2)],
+>>>>>>> Stashed changes
         nTrials: 50,
         basePay: 3.00,
         roundLength: 4,
