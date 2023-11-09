@@ -186,51 +186,30 @@ const dmPsych = (function() {
 
     let losses = 0, round = 1, streak = 0, trialNumber = 0, tooSlow = null, tooFast = null, message;
 
-    let displayFeedback = (blockName == "practice") ? "hidden" : "visible"
+    const winFeedback = (gameType == "strk") ? "{strk-feedback}" : (blockName == "practice") ? "You won!" : "+10 Tokens";
 
-    const tokens_html =  `<div class="outcome-container">
-                            <div class="header-win" style="color:${hex}">{header}</div>
-                            <div class="token-image" style="visibility: hidden"><img src="./img/coins.jpg" height="350px"></div>
-                            <div class="token-text-win" style="visibility: ${displayFeedback}; color:${hex}">+10 Tokens</div>
-                          </div>`;
+    const lossFeedback = (gameType == "strk") ? "{strk-feedback}" : (blockName == "practice") ? "You lost!" : "+0 Tokens";
 
-    const tokens_bonus_html =  `<div class="outcome-container">
-                            <div class="header-win" style="color:${hex}">{header}</div>
-                            <div class="token-image" style="visibility: hidden"><img src="./img/coins.jpg" height="350px"></div>
-                            <div class="token-text-win" style="visibility: ${displayFeedback}; color:${hex}; top:40%">+10 Tokens</div>
-                            <div class="bonus-text" style="visibility: ${displayFeedback}">+5 Bonus</div>
-                          </div>`;
+    const tokens_html = `<div class="outcome-container">
+                          <div class="token-text-win" style="color:${hex}">${winFeedback}</div>
+                        </div>`;
 
-    const tokens_penalty_html =  `<div class="outcome-container">
-                            <div class="header-win" style="color:${hex}">{header}</div>
-                            <div class="token-image" style="visibility: hidden"><img src="./img/coins.jpg" height="350px"></div>
-                            <div class="token-text-win" style="visibility: ${displayFeedback}; color:${hex}; top:40%">+10 Tokens</div>
-                            <div class="penalty-text" style="visibility: ${displayFeedback}">-5 Deduction</div>
-                          </div>`;
+    const tokens_bonus_html = `<div class="outcome-container">
+                                <div class="token-text-win" style="color:${hex}; top:40%">${winFeedback}</div>
+                                <div class="bonus-text">+5 Bonus</div>
+                              </div>`;
 
     const noTokens_html = `<div class="outcome-container">
-                            <div class="header-lose">{header}</div>
-                            <div class="token-image" style="visibility: hidden"><img src="./img/no-coins.jpg" height="350px"></div>
-                            <div class="token-text-lose" style="visibility: ${displayFeedback}">+0 Tokens</div>
+                            <div class="token-text-lose">${lossFeedback}</div>
                           </div>`;
 
     const noTokens_bonus_html = `<div class="outcome-container">
-                            <div class="header-lose">{header}</div>
-                            <div class="token-image" style="visibility: hidden"><img src="./img/no-coins.jpg" height="350px"></div>
-                            <div class="token-text-lose" style="visibility: ${displayFeedback}; top:40%">+0 Tokens</div>
-                            <div class="bonus-text" style="visibility: ${displayFeedback}">+5 Bonus</div>
-                          </div>`;
+                                  <div class="token-text-lose" style="top:40%">${lossFeedback}</div>
+                                  <div class="bonus-text">+5 Bonus</div>
+                                </div>`;
 
-    const noTokens_penalty_html = `<div class="outcome-container">
-                            <div class="header-lose">{header}</div>
-                            <div class="token-image" style="visibility: hidden"><img src="./img/no-coins.jpg" height="350px"></div>
-                            <div class="token-text-lose" style="visibility: ${displayFeedback}; top:40%">+0 Tokens</div>
-                            <div class="penalty-text" style="visibility: ${displayFeedback}">-5 Deduction</div>
-                          </div>`;
-
-    const currentRound_html = `<div class="outcome-container">
+    const iti_html = `<div class="outcome-container">
                                 <div class="header">{header}</div>
-                                <div class="iti-text">{iti}</div>
                               </div>`;
 
     const probe_html = `<div class="outcome-container">
@@ -244,7 +223,9 @@ const dmPsych = (function() {
                           </div>`;
 
 
-    const latency = dmPsych.makeRT(nTrials, pM, roundLength, gameType);
+    const {latency, bonus} = dmPsych.makeRT(nTrials, pM, .25, roundLength, gameType);
+
+    console.log(latency, bonus);
 
     const intro = {
       type: jsPsychHtmlKeyboardResponse,
@@ -272,11 +253,11 @@ const dmPsych = (function() {
       data: {phase: 'iti', block: blockName, round: roundNum},
       stimulus: () => {
         const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win the round!";
-        return currentRound_html.replace("{header}", header).replace("{iti}", ``);;
+        return iti_html.replace("{header}", header);
       },
       choices: [" "],
       trial_duration: () => {
-        let iti_draw = Math.floor(Math.random() * 1900) + 100;
+        let iti_draw = Math.floor(Math.random() * 1750) + 100;
         return iti_draw;
       },
       on_finish: (data) => {
@@ -318,7 +299,6 @@ const dmPsych = (function() {
         return latency[trialNumber] 
       },
       on_finish: (data) => {
-        console.log(latency[trialNumber], data.rt)
         data.probeDuration = latency[trialNumber];
         data.response ? tooSlow = 0 : tooSlow = 1;
         data.tooSlow = tooSlow;
@@ -350,14 +330,11 @@ const dmPsych = (function() {
       stimulus: () => {
         if (gameType == 'bern') {
           if (tooSlow) {
-            let header = "You lost";
-            message = [noTokens_html, noTokens_html, noTokens_bonus_html][Math.floor(Math.random() * 3)]; 
-            message = message.replace("{header}", header);
+            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? noTokens_bonus_html : noTokens_html;
             round++;          
           } else {
-            let header = "You won!";
-            message = [tokens_html, tokens_html, tokens_bonus_html][Math.floor(Math.random() * 3)]; 
-            message = message.replace("{header}", header);
+            let header = "";
+            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? tokens_bonus_html : tokens_html;
             round++;          
           };
           return message;
@@ -366,16 +343,14 @@ const dmPsych = (function() {
           if (tooSlow && losses < 3) {
             losses++;
             let header = `Attempts remaining: ${4 - losses}`;
-            message = currentRound_html.replace("{header}", header).replace("{iti}", ``);
+            message = iti_html.replace("{header}", header);
           } else if (tooSlow && losses == roundLength - 1) {
             losses = 0;
-            let header = "You lost";
-            message = noTokens_html.replace("{header}", header);
+            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? noTokens_bonus_html : noTokens_html;
             round++;
           } else {
             losses = 0;
-            let header = "You won!";
-            message = tokens_html.replace("{header}", header);
+            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? tokens_bonus_html : tokens_html;
             round++;
           };
           return message;
@@ -405,12 +380,14 @@ const dmPsych = (function() {
           if (tooSlow && streak > 0) {
             let finalStreak = streak;
             streak = 0;
-            message = tokens_html.replace("{header}", `Final Streak: ${finalStreak}`).replace("+10", `+${finalStreak * 10}`); 
+            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? tokens_bonus_html : tokens_html;
+            message = message.replace("{strk-feedback}", `+${finalStreak * 10} Tokens`); 
           } else if (tooSlow && streak == 0) {
-            message = noTokens_html.replace("{header}", `Final Streak: ${streak}`);
+            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? noTokens_bonus_html : noTokens_html;
+            message = message.replace("{strk-feedback}", `+0 Tokens`); 
           } else {
             streak++;
-            message = currentRound_html.replace("{header}", `Current Streak: ${streak}`).replace("{iti}", '');
+            message = iti_html.replace("{header}", `Current Streak: ${streak}`);
           };
           return message;
         };
@@ -440,38 +417,56 @@ const dmPsych = (function() {
   // make n-dimensional array of RTs given p(hit) = p
   obj.makeRT = function(nTrials, pWin, pBonus, roundLength, gameType) {
 
+    const chunkSize = (nTrials > 10) ? 25 : 10;
+
     // get number of wins, losses, bonus, and non-bonus trials
-    const nWins = Math.round(10 * pWin);
-    const nLoss = 10 - nWins;
-    const nBonus = Math.round(nTrials * pBonus);
-    const nNoBonus = nTrials - nBonus;
+    const nWinsPer10 = Math.round(chunkSize * pWin);
+    const nLossPer10 = chunkSize - nWinsPer10;
+    const nWinBonus = Math.round(nTrials * pWin * pBonus);
+    const nWinNormal = Math.round(nTrials * pWin * (1 - pBonus));
+    const nLossBonus = Math.round(nTrials * (1 - pWin) * pBonus);
+    const nLossNormal = Math.round(nTrials * (1 - pWin) * (1 - pBonus));
 
     // create array of 10 wins and losses
-    const winsArray = Array(nWins).fill(750);
-    const lossArray = Array(nLoss).fill(200);
-    const rtArray_10 = winsArray.concat(lossArray);
+    const winningRTs = Array(nWinsPer10).fill(750);
+    const losingRTs = Array(nLossPer10).fill(200);
+    const tenRTs = winningRTs.concat(losingRTs);
 
-    // create array of 10 bonuses and non-bonuses
-    const bonusArray = Array(nBonus).fill("bonus");
-    const noBonusArray = Array(nNoBonus).fill("no-bonus");
-    const bonusArray_10 = bonusArray.concat(noBonusArray);
+    // create suffled array of outcomes (bonus vs. normal) for winning trials
+    const winningBonuses = Array(nWinBonus).fill("bonus");
+    const winningNormals = Array(nWinNormal).fill("normal");
+    const winningOutcomes = winningBonuses.concat(winningNormals);
+    const winningOutcomes_shuffled = jsPsych.randomization.repeat(winningOutcomes, 1);
 
-    
+    // create shuffled array of outcomes (bonus vs. normal) for losing trials
+    const losingBonuses = Array(nLossBonus).fill("bonus");
+    const losingNormals = Array(nLossNormal).fill("normal");
+    const losingOutcomes = losingBonuses.concat(losingNormals);
+    const losingOutcomes_shuffled = jsPsych.randomization.repeat(losingOutcomes, 1);
 
+    // create array of 50 wins and losses with the correct type of final trial
     const lastRT = (gameType == "strk") ? 200 : 750;
     let rtArray = [];
-    let bonusArray = [];
-
     while (rtArray[nTrials - 1] !== lastRT) {
       rtArray = []
-      for (let i = 0; i < nTrials / 10; i++) {
-        let rtArray_10_shuffled = jsPsych.randomization.repeat(rtArray_10, 1);
-        rtArray.push(...rtArray_10_shuffled);
+      for (let i = 0; i < nTrials / chunkSize; i++) {
+        let tenRTs_shuffled = jsPsych.randomization.repeat(tenRTs, 1);
+        rtArray.push(...tenRTs_shuffled);
       };
     };
 
-    console.log(rtArray);
-    return rtArray;
+    let bonusArray = [];
+    for (let i = 0; i < nTrials; i++) {
+      if (rtArray[i] == 200) {
+        let outcome = losingOutcomes_shuffled.pop();
+        bonusArray.push(outcome);
+      } else if (rtArray[i] == 750) {
+        let outcome = winningOutcomes_shuffled.pop();
+        bonusArray.push(outcome);
+      };
+    };
+
+    return {latency: rtArray, bonus: bonusArray};
 
   };
 
