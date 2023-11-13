@@ -278,6 +278,7 @@ const dmPsych = (function() {
       on_finish: (data) => {
         data.response == " " ? tooFast = 1 : tooFast = 0;
         data.tooFast = tooFast;
+        data.trial = trialNumber;
       },
     };
 
@@ -317,6 +318,7 @@ const dmPsych = (function() {
         data.probeDuration = latency[trialNumber];
         data.response ? tooSlow = 0 : tooSlow = 1;
         data.tooSlow = tooSlow;
+        data.trial = trialNumber;
       },
     };
 
@@ -336,6 +338,7 @@ const dmPsych = (function() {
       trial_duration: 1000,
       on_finish: (data) => {
         data.rt_adjusted = data.rt + latency[trialNumber];
+        data.trial = trialNumber;
       }
     };
 
@@ -445,6 +448,7 @@ const dmPsych = (function() {
         };
         !tooSlow ? data.jackpot = true : data.jackpot = false;      
         data.totalTokens = totalTokens;
+        data.trial = trialNumber;
         console.log(data.totalTokens);
       },
     };
