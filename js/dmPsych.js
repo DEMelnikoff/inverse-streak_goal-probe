@@ -1285,7 +1285,7 @@ const dmPsych = (function() {
         You are invited to participate in a research study designed to examine judgment and decision-making.</p>
 
         <p><b>Procedures:</b><br>
-        If you agree to take part, your participation in this study will involve answering a series of questions as well as making choices between different options that will be presented to you as part of study activities. We anticipate that your involvement will require 13-16 minutes.</p>
+        If you agree to take part, your participation in this study will involve answering a series of questions as well as making choices between different options that will be presented to you as part of study activities. We anticipate that your involvement will require ~13 minutes.</p>
 
         <p><b>Compensation:</b><br>
         You'll receive $${basePay} in exchange for your participation.</p>
