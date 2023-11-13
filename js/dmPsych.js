@@ -199,6 +199,11 @@ const dmPsych = (function() {
                                 <div class="bonus-text">+5 Bonus</div>
                               </div>`;
 
+    const tokens_loss_html = `<div class="outcome-container">
+                                <div class="token-text-win" style="color:${hex}; top:40%">${winFeedback}</div>
+                                <div class="penalty-text">-5 Loss</div>
+                              </div>`;
+
     const noTokens_html = `<div class="outcome-container">
                             <div class="token-text-lose">${lossFeedback}</div>
                           </div>`;
@@ -206,6 +211,11 @@ const dmPsych = (function() {
     const noTokens_bonus_html = `<div class="outcome-container">
                                   <div class="token-text-lose" style="top:40%">${lossFeedback}</div>
                                   <div class="bonus-text">+5 Bonus</div>
+                                </div>`;
+
+    const noTokens_loss_html = `<div class="outcome-container">
+                                  <div class="token-text-lose" style="top:40%">${lossFeedback}</div>
+                                  <div class="penalty-text">-5 Loss</div>
                                 </div>`;
 
     const iti_html = `<div class="outcome-container">
@@ -415,7 +425,7 @@ const dmPsych = (function() {
   };
 
   // make n-dimensional array of RTs given p(hit) = p
-  obj.makeRT = function(nTrials, pWin, pBonus, roundLength, gameType) {
+  obj.makeRT = function(nTrials, pWin, pBonus, pLoss, roundLength, gameType) {
 
     const chunkSize = (nTrials > 10) ? 25 : 10;
 
@@ -423,9 +433,11 @@ const dmPsych = (function() {
     const nWinsPer10 = Math.round(chunkSize * pWin);
     const nLossPer10 = chunkSize - nWinsPer10;
     const nWinBonus = Math.round(nTrials * pWin * pBonus);
-    const nWinNormal = Math.round(nTrials * pWin * (1 - pBonus));
+    const nWinLoss = Math.round(nTrials * pWin * pLoss);
+    const nWinNormal = Math.round(nTrials * pWin * (1 - (pBonus + pLoss)));
     const nLossBonus = Math.round(nTrials * (1 - pWin) * pBonus);
-    const nLossNormal = Math.round(nTrials * (1 - pWin) * (1 - pBonus));
+    const nLossLoss = Math.round(nTrials * (1 - pWin) * pLoss);
+    const nLossNormal = Math.round(nTrials * (1 - pWin) * (1 - (pBonus + pLoss)));
 
     // create array of 10 wins and losses
     const winningRTs = Array(nWinsPer10).fill(750);
@@ -434,14 +446,18 @@ const dmPsych = (function() {
 
     // create suffled array of outcomes (bonus vs. normal) for winning trials
     const winningBonuses = Array(nWinBonus).fill("bonus");
+    const winningLosses = Array(nWinLoss).fill("loss");
     const winningNormals = Array(nWinNormal).fill("normal");
-    const winningOutcomes = winningBonuses.concat(winningNormals);
+    const winningOutcomes = winningBonuses.concat(winningLosses);
+    const winningOutcomes = winningOutcomes.concat(winningNormals);
     const winningOutcomes_shuffled = jsPsych.randomization.repeat(winningOutcomes, 1);
 
     // create shuffled array of outcomes (bonus vs. normal) for losing trials
     const losingBonuses = Array(nLossBonus).fill("bonus");
+    const losingLosses = Array(nLossLoss).fill("loss");
     const losingNormals = Array(nLossNormal).fill("normal");
-    const losingOutcomes = losingBonuses.concat(losingNormals);
+    const losingOutcomes = losingBonuses.concat(losingLosses);
+    const losingOutcomes = losingOutcomes.concat(losingNormals);
     const losingOutcomes_shuffled = jsPsych.randomization.repeat(losingOutcomes, 1);
 
     // create array of 50 wins and losses with the correct type of final trial
