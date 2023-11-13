@@ -6,12 +6,12 @@ var exp = (function() {
     const colorOrder = Math.floor(Math.random() * 2);
 
     const settings = {
-        pM: [.2, .8][Math.floor(Math.random()*2)],
+        pM: [.1, .9][Math.floor(Math.random()*2)],
         pM_practice: .5,
         gameType: [['bern', '1inN'], ['1inN', 'bern']][Math.floor(Math.random()*2)],
         nTrials: 50,
         basePay: 3.00,
-        roundLength: 3,
+        roundLength: 6,
         hex_1: ['#00aa00', '#1067e8'][colorOrder],
         hex_2: ['#00aa00', '#1067e8'][1 - colorOrder],
         gameName_1: ['<span style="color: #00aa00; font-weight: bold">Green Game</span>', '<span style="color: #1067e8; font-weight: bold">Blue Game</span>'][colorOrder],
@@ -79,43 +79,61 @@ var exp = (function() {
 
         if (gameType == '1inN') {
             // attention check #1
-            a1 = 'Activate a tile before my four chances are up.';
-            a2 = 'You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.';
-            a3 = (pM == .5) ? '90% of their rounds.' : '50% of their rounds.';
+            a1 = 'Activate a tile before my six chances are up.';
+            a2 = 'You will receive tokens, increasing your odds of winning a $100.00 bonus prize.';
+            a3 = (pM == .1) ? 'Less time to activate the tile.' : 'More time to activate the tile.';
         };
 
         if (gameType == 'bern') {
             // attention check #1
             a1 = 'Activate each and every tile.';
-            a2 = 'You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.';
-            a3 = (pM == .5) ? '50% of their rounds.' : '15% of their rounds.';
+            a2 = 'You will receive tokens, increasing your odds of winning a $100.00 bonus prize.';
+            a3 = (pM == .1) ? 'Less time to activate the tile.' : 'More time to activate the tile.';
         };
 
         const compChk = {
             type: jsPsychSurveyMultiChoice,
             preamble: `<div style="font-size:16px"><p>To make sure you understand the ${gameName}, please answer the following questions:</p></div>`,
-            questions: [
-                {
-                  prompt: `What is the goal of the ${gameName}?`, 
-                  name: 'attnChk1', 
-                  options: ['Activate each and every tile.', 'Activate a tile before my four chances are up.'], 
-                  required: true
-                },
-                {
-                  prompt: `Each time you win a round...`, 
-                  name: 'attnChk2', 
-                  options: ['You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.', 'You will receive bonus points.', 'You will receive $1.00.'],
-                  required: true
-                },
-                {
-                  prompt: `In the ${gameName}, players generally win...`, 
-                  name: 'attnChk3', 
-                  options: ['15% of their rounds.', '50% of their rounds.', '90% of their rounds.'], 
-                  required: true
-                },
-            ],
+            questions: () => {
+                const round1_Qs = [
+                    {
+                      prompt: `What is the goal of the ${gameName}?`, 
+                      name: 'attnChk1', 
+                      options: ['Activate each and every tile.', 'Activate a tile before my six chances are up.'], 
+                      required: true
+                    },
+                    {
+                      prompt: `Each time you win a round...`, 
+                      name: 'attnChk2', 
+                      options: ['You will receive tokens, increasing your odds of winning a $100.00 bonus prize.', 'You will receive bonus points.', 'You will receive $1.00.'],
+                      required: true
+                    },
+                    {
+                      prompt: `In the ${gameName}, you'll have...`, 
+                      name: 'attnChk3', 
+                      options: ['Less time to activate the tile.', 'More time to activate the tile.', 'The same speed as in practice.'], 
+                      required: true
+                    },
+                ];
+                const round2_Qs = [
+                    {
+                      prompt: `What is the goal of the ${gameName}?`, 
+                      name: 'attnChk1', 
+                      options: ['Activate each and every tile.', 'Activate a tile before my six chances are up.'], 
+                      required: true
+                    },
+                    {
+                      prompt: `Each time you win a round...`, 
+                      name: 'attnChk2', 
+                      options: ['You will receive tokens, increasing your odds of winning a $100.00 bonus prize.', 'You will receive bonus points.', 'You will receive $1.00.'],
+                      required: true
+                    },
+                ];
+
+                return (round == 1) ? round1_Qs : round2_Qs;
+            },
             on_finish: (data) => {
-                const correctAnswers = [a1, a2, a3];
+                const correctAnswers = (round == 1) ? [a1, a2, a3] : [a1, a2];
                 const totalErrors = dmPsych.getTotalErrors(data, correctAnswers);
                 data.totalErrors = totalErrors;
             }
@@ -222,51 +240,11 @@ var exp = (function() {
 
     // constructor functions
 
-
-    var enjoyQs = function(name, round) {
-        this.type = jsPsychSurveyLikert;
-        this.preamble = `<div style='padding-top: 50px; width: 850px; font-size:16px'>
-
-        <p>Thank you for completing the ${name}!</p>
-
-        <p>How much did you enjoy the ${name}?<br>
-        Report the degree to which you enjoyed the ${name} by answering the following questions.</p></div>`;
-        this.questions = [
-            {prompt: `How much did you <strong>enjoy</strong> playing the ${name}?`,
-            name: `enjoyable`,
-            labels: zeroToALot},
-            {prompt: `How much did you <strong>like</strong> playing the ${name}?`,
-            name: `like`,
-            labels: zeroToALot},
-            {prompt: `How much did you <strong>dislike</strong> playing the ${name}?`,
-            name: `dislike`,
-            labels: zeroToALot},
-            {prompt: `How much <strong>fun</strong> did you have playing the ${name}?`,
-            name: `fun`,
-            labels: zeroToALot},
-            {prompt: `How <strong>entertaining</strong> was the ${name}?`,
-            name: `entertaining`,
-            labels: zeroToExtremely},
-        ];
-        this.randomize_question_order = false;
-        this.scale_width = 700;
-        this.data = {round: round};
-        this.on_finish = (data) => {
-            dmPsych.saveSurveyData(data);
-        };
-    };
-
     const flowQs = function(name, round) {
         this.type = jsPsychSurveyLikert;
         this.preamble = `<div style='padding-top: 50px; width: 850px; font-size:16px'>
 
-        <p>Below are a few more questions about the ${name}.</p>
-
-        <p>These questions are <b>not</b> about enjoyment. Instead, they ask how <b>immersed and engeged</b> you were.</p>
-        During the ${name}, were you so "in the zone" and "locked in" that you lost yourself in what you were doing?<br>
-        Or were you bored, frustrated, or otherwise distracted?</p>
-
-        <p>Report how immersed and engaged you were by answering the following questions.</p></div>`;
+        <p>To report how immersed and engaged you felt in the ${name},<br>please answer the following questions as honestly as possible.</p>`;
         this.questions = [
             {prompt: `During the ${name}, how <strong>absorbed</strong> did you feel in what you were doing?`,
             name: `absorbed`,
@@ -291,13 +269,46 @@ var exp = (function() {
             dmPsych.saveSurveyData(data);
         };
     };
+
+    var enjoyQs = function(name, round) {
+        this.type = jsPsychSurveyLikert;
+        this.preamble = `<div style='padding-top: 50px; width: 850px; font-size:16px'>
+
+        <p>Below are a few more questions about the ${name}.</p>
+
+        <p>Instead of asking about immersion and engagement, these questions ask about <strong>enjoyment</strong>.<br>
+        Report how much you <strong>enjoyed</strong> the ${name} by answering the following questions.</p></div>`;
+        this.questions = [
+            {prompt: `How much did you <strong>enjoy</strong> playing the ${name}?`,
+            name: `enjoyable`,
+            labels: zeroToALot},
+            {prompt: `How much did you <strong>like</strong> playing the ${name}?`,
+            name: `like`,
+            labels: zeroToALot},
+            {prompt: `How much did you <strong>dislike</strong> playing the ${name}?`,
+            name: `dislike`,
+            labels: zeroToALot},
+            {prompt: `How much <strong>fun</strong> did you have playing the ${name}?`,
+            name: `fun`,
+            labels: zeroToALot},
+            {prompt: `How <strong>entertaining</strong> was the ${name}?`,
+            name: `entertaining`,
+            labels: zeroToExtremely},
+        ];
+        this.randomize_question_order = false;
+        this.scale_width = 700;
+        this.data = {round: round};
+        this.on_finish = (data) => {
+            dmPsych.saveSurveyData(data);
+        };
+    };
     
     p.round1_Qs = {
-        timeline: [new enjoyQs(settings.gameName_1, 1), new flowQs(settings.gameName_1, 1)]
+        timeline: [new flowQs(settings.gameName_1, 1), new enjoyQs(settings.gameName_1, 1)]
     };
 
     p.round2_Qs = {
-        timeline: [new enjoyQs(settings.gameName_2, 2), new flowQs(settings.gameName_2, 2)]
+        timeline: [new flowQs(settings.gameName_2, 2), new enjoyQs(settings.gameName_2, 2)]
     };
 
     p.demographics = (function() {
@@ -405,7 +416,7 @@ var exp = (function() {
     p.save_data = {
         type: jsPsychPipe,
         action: "save",
-        experiment_id: "5gj8ihblbO0L",
+        experiment_id: "nKeuinPy4poU",
         filename: dmPsych.filename,
         data_string: ()=>jsPsych.data.get().csv()
     };

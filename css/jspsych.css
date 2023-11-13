@@ -229,7 +229,7 @@
 
 .parent {
   position: relative;
-  width: 950px;
+  width: 975px;
   height: 390px;
 }
 
@@ -301,7 +301,7 @@
     position: absolute; 
     font-size: 70px;
     color: yellow;
-    top: 60%; 
+    top: 70%; 
     left: 50%; 
     transform: translate(-50%, -50%); 
     width: 100%;
@@ -313,7 +313,7 @@
     position: absolute; 
     font-size: 70px;
     color: red;
-    top: 60%; 
+    top: 70%; 
     left: 50%; 
     transform: translate(-50%, -50%); 
     width: 100%;

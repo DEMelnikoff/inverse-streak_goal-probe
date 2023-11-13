@@ -13,9 +13,9 @@ const dmPsych = (function() {
   window.jsPsych = initJsPsych({
     on_finish: () => {
       let boot = jsPsych.data.get().last(1).select('boot').values[0];
-      let totalMisses = jsPsych.data.get().filter({phase: 'probe', block: 'tileGame'}).select('tooSlow').sum();
-      let totalHits = 100 - totalMisses;
-      let totalTokens = totalHits * 10;
+      let totalTokens_1 = jsPsych.data.get().filter({round: 1}).select('totalTokens').max();
+      let totalTokens_2 = jsPsych.data.get().filter({round: 2}).select('totalTokens').max();
+      let totalTokens = totalTokens_1 + totalTokens_2;
       if(!boot) {
         document.body.innerHTML = 
         `<div align='center' style="margin: 10%">
@@ -184,7 +184,7 @@ const dmPsych = (function() {
   // create tile game
   obj.MakeTileGame = function(hex, tileHit, tileMiss, roundLength, gameType, nTrials, pM, blockName, roundNum) {
 
-    let losses = 0, round = 1, streak = 0, trialNumber = 0, tooSlow = null, tooFast = null, message;
+    let losses = 0, round = 1, streak = 0, trialNumber = 0, tooSlow = null, tooFast = null, totalTokens = 0, message;
 
     const winFeedback = (gameType == "strk") ? "{strk-feedback}" : (blockName == "practice") ? "You won!" : "+10 Tokens";
 
@@ -195,12 +195,12 @@ const dmPsych = (function() {
                         </div>`;
 
     const tokens_bonus_html = `<div class="outcome-container">
-                                <div class="token-text-win" style="color:${hex}; top:40%">${winFeedback}</div>
+                                <div class="token-text-win" style="color:${hex}">${winFeedback}</div>
                                 <div class="bonus-text">+5 Bonus</div>
                               </div>`;
 
     const tokens_loss_html = `<div class="outcome-container">
-                                <div class="token-text-win" style="color:${hex}; top:40%">${winFeedback}</div>
+                                <div class="token-text-win" style="color:${hex}">${winFeedback}</div>
                                 <div class="penalty-text">-5 Loss</div>
                               </div>`;
 
@@ -209,12 +209,12 @@ const dmPsych = (function() {
                           </div>`;
 
     const noTokens_bonus_html = `<div class="outcome-container">
-                                  <div class="token-text-lose" style="top:40%">${lossFeedback}</div>
+                                  <div class="token-text-lose">${lossFeedback}</div>
                                   <div class="bonus-text">+5 Bonus</div>
                                 </div>`;
 
     const noTokens_loss_html = `<div class="outcome-container">
-                                  <div class="token-text-lose" style="top:40%">${lossFeedback}</div>
+                                  <div class="token-text-lose">${lossFeedback}</div>
                                   <div class="penalty-text">-5 Loss</div>
                                 </div>`;
 
@@ -233,9 +233,14 @@ const dmPsych = (function() {
                           </div>`;
 
 
-    const {latency, bonus} = dmPsych.makeRT(nTrials, pM, .25, roundLength, gameType);
+    const makeFeedbackArray = function() {
+      return jsPsych.randomization.repeat(['plus', 'minus', 'normal', 'normal', 'normal'], 1);
+    }
 
-    console.log(latency, bonus);
+    const latency = dmPsych.makeRT(nTrials, pM, roundLength, gameType);
+
+    let winArray = makeFeedbackArray();
+    let lossArray = makeFeedbackArray();
 
     const intro = {
       type: jsPsychHtmlKeyboardResponse,
@@ -262,7 +267,7 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {phase: 'iti', block: blockName, round: roundNum},
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win the round!";
+        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
         return iti_html.replace("{header}", header);
       },
       choices: [" "],
@@ -281,7 +286,7 @@ const dmPsych = (function() {
       data: {phase: 'warning', block: blockName, round: roundNum},
       choices: "NO_KEYS",
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win the round!";
+        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
         const message = warning_html.replace("{header}", header);
         return (tooFast) ? message : '';
       },
@@ -301,7 +306,7 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {phase: 'probe', block: blockName, round: roundNum},
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win the round!";
+        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
         return probe_html.replace("{header}", header);
       },
       choices: [" "],
@@ -319,7 +324,7 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {phase: `activation`, block: blockName, round: roundNum},
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${4 - losses}` : "Win the round!";
+        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
         if (!tooSlow) {
           return tileHit.replace("{header}", header);
         } else {
@@ -340,28 +345,55 @@ const dmPsych = (function() {
       stimulus: () => {
         if (gameType == 'bern') {
           if (tooSlow) {
-            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? noTokens_bonus_html : noTokens_html;
-            round++;          
+            let feedbackType = lossArray.pop();
+            message = (feedbackType == "plus" && blockName !== "practice") ? noTokens_bonus_html : (feedbackType == "minus" && blockName !== "practice") ? noTokens_loss_html : noTokens_html;
+            if (blockName !== "practice") {
+              (feedbackType == "plus") ? totalTokens += 5 : (feedbackType == "minus") ? totalTokens -= 5 : totalTokens += 0;
+            };            
+            round++;
+            if (lossArray.length == 0) {
+              lossArray = makeFeedbackArray();
+            };         
           } else {
-            let header = "";
-            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? tokens_bonus_html : tokens_html;
-            round++;          
+            let feedbackType = winArray.pop();
+            message = (feedbackType == "plus" && blockName !== "practice") ? tokens_bonus_html : (feedbackType == "minus" && blockName !== "practice") ? tokens_loss_html : tokens_html;
+            if (blockName !== "practice") {
+              (feedbackType == "plus") ? totalTokens += 15 : (feedbackType == "minus") ? totalTokens += 5 : totalTokens += 10;
+            };               
+            round++;
+            if (winArray.length == 0) {
+              winArray = makeFeedbackArray();
+            };             
           };
           return message;
         }; 
         if (gameType == '1inN') {
-          if (tooSlow && losses < 3) {
+          if (tooSlow && losses < 5) {
             losses++;
-            let header = `Attempts remaining: ${4 - losses}`;
+            let header = `Attempts remaining: ${6 - losses}`;
             message = iti_html.replace("{header}", header);
-          } else if (tooSlow && losses == roundLength - 1) {
+          } else if (tooSlow && losses == 5) {
             losses = 0;
-            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? noTokens_bonus_html : noTokens_html;
+            let feedbackType = lossArray.pop();
+            message = (feedbackType == "plus" && blockName !== "practice") ? noTokens_bonus_html : (feedbackType == "minus" && blockName !== "practice") ? noTokens_loss_html : noTokens_html;
+            if (blockName !== "practice") {
+              (feedbackType == "plus") ? totalTokens += 5 : (feedbackType == "minus") ? totalTokens -= 5 : totalTokens += 0;
+            };
             round++;
+            if (lossArray.length == 0) {
+              lossArray = makeFeedbackArray();
+            };
           } else {
             losses = 0;
-            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? tokens_bonus_html : tokens_html;
+            let feedbackType = winArray.pop();
+            message = (feedbackType == "plus" && blockName !== "practice") ? tokens_bonus_html : (feedbackType == "minus" && blockName !== "practice") ? tokens_loss_html : tokens_html;
+            if (blockName !== "practice") {
+              (feedbackType == "plus") ? totalTokens += 15 : (feedbackType == "minus") ? totalTokens += 5 : totalTokens += 10;
+            };            
             round++;
+            if (winArray.length == 0) {
+              winArray = makeFeedbackArray();
+            };     
           };
           return message;
         };
@@ -412,6 +444,8 @@ const dmPsych = (function() {
           streak = 0 
         };
         !tooSlow ? data.jackpot = true : data.jackpot = false;      
+        data.totalTokens = totalTokens;
+        console.log(data.totalTokens);
       },
     };
 
@@ -425,64 +459,40 @@ const dmPsych = (function() {
   };
 
   // make n-dimensional array of RTs given p(hit) = p
-  obj.makeRT = function(nTrials, pWin, pBonus, pLoss, roundLength, gameType) {
+  obj.makeRT = function(nTrials, pWin, roundLength, gameType) {
 
-    const chunkSize = (nTrials > 10) ? 25 : 10;
+    const chunkSize = 6;
 
-    // get number of wins, losses, bonus, and non-bonus trials
-    const nWinsPer10 = Math.round(chunkSize * pWin);
-    const nLossPer10 = chunkSize - nWinsPer10;
-    const nWinBonus = Math.round(nTrials * pWin * pBonus);
-    const nWinLoss = Math.round(nTrials * pWin * pLoss);
-    const nWinNormal = Math.round(nTrials * pWin * (1 - (pBonus + pLoss)));
-    const nLossBonus = Math.round(nTrials * (1 - pWin) * pBonus);
-    const nLossLoss = Math.round(nTrials * (1 - pWin) * pLoss);
-    const nLossNormal = Math.round(nTrials * (1 - pWin) * (1 - (pBonus + pLoss)));
+    // function for drawing random number from geometric distribution
+    const rGeom = (p, max) => {
+      let draw = max + 1;
+      while (draw > max) {
+        draw = Math.floor(Math.log(1 - Math.random()) / Math.log(1 - p))
+      };
+      return draw;
+    };
 
-    // create array of 10 wins and losses
-    const winningRTs = Array(nWinsPer10).fill(750);
-    const losingRTs = Array(nLossPer10).fill(200);
-    const tenRTs = winningRTs.concat(losingRTs);
+    // make rt array
+    const nLossChunks = (pWin == .1) ? 5 : (pWin == .9) ? 0 : 0;
+    const nWinChunks = (pWin == .1) ? 5 : (pWin == .9) ? 45 : 5;
+ 
+    const lossArray = Array(nLossChunks).fill('loss');
+    const winArray = Array(nWinChunks).fill('win');
+    const winLossArray = lossArray.concat(winArray);
+    const winLossArray_shuffled = jsPsych.randomization.repeat(winLossArray, 1);
+    let rtArray = []
 
-    // create suffled array of outcomes (bonus vs. normal) for winning trials
-    const winningBonuses = Array(nWinBonus).fill("bonus");
-    const winningLosses = Array(nWinLoss).fill("loss");
-    const winningNormals = Array(nWinNormal).fill("normal");
-    const winningOutcomes = winningBonuses.concat(winningLosses);
-    const winningOutcomes = winningOutcomes.concat(winningNormals);
-    const winningOutcomes_shuffled = jsPsych.randomization.repeat(winningOutcomes, 1);
-
-    // create shuffled array of outcomes (bonus vs. normal) for losing trials
-    const losingBonuses = Array(nLossBonus).fill("bonus");
-    const losingLosses = Array(nLossLoss).fill("loss");
-    const losingNormals = Array(nLossNormal).fill("normal");
-    const losingOutcomes = losingBonuses.concat(losingLosses);
-    const losingOutcomes = losingOutcomes.concat(losingNormals);
-    const losingOutcomes_shuffled = jsPsych.randomization.repeat(losingOutcomes, 1);
-
-    // create array of 50 wins and losses with the correct type of final trial
-    const lastRT = (gameType == "strk") ? 200 : 750;
-    let rtArray = [];
-    while (rtArray[nTrials - 1] !== lastRT) {
+    while (rtArray.length !== nTrials) {
       rtArray = []
-      for (let i = 0; i < nTrials / chunkSize; i++) {
-        let tenRTs_shuffled = jsPsych.randomization.repeat(tenRTs, 1);
-        rtArray.push(...tenRTs_shuffled);
+      for (let i = 0; i < winLossArray_shuffled.length; i++) {
+        let chunkLength = (winLossArray_shuffled[i] == 'loss') ? chunkSize - 1 : rGeom(pWin, chunkSize - 1);
+        let chunk = Array(chunkLength).fill(200);
+        (winLossArray_shuffled[i] == 'loss') ? chunk.push(200) : chunk.push(750);
+        rtArray.push(...chunk);
       };
     };
 
-    let bonusArray = [];
-    for (let i = 0; i < nTrials; i++) {
-      if (rtArray[i] == 200) {
-        let outcome = losingOutcomes_shuffled.pop();
-        bonusArray.push(outcome);
-      } else if (rtArray[i] == 750) {
-        let outcome = winningOutcomes_shuffled.pop();
-        bonusArray.push(outcome);
-      };
-    };
-
-    return {latency: rtArray, bonus: bonusArray};
+    return rtArray;
 
   };
 
@@ -1496,8 +1506,8 @@ const dmPsych = (function() {
 
       if (gameType == 'strk') {
         if (round == 1) {
-          const fasterOrSlower = (pM == .16) ? "you'll have to respond faster than you did" : "you won't have to respond as fast as you did";
-          const speed = (pM == .16) ? "less" : "more";
+          const fasterOrSlower = (pM == .1) ? "you'll have to respond faster than you did" : "you won't have to respond as fast as you did";
+          const speed = (pM == .1) ? "less" : "more";
           html = [`<div class='parent'>
                     <p>Practice is now complete.</p>
                     <p>Now that you have a feel for the ${gameName_1}, you'll learn how to earn tokens.</p>
@@ -1510,8 +1520,6 @@ const dmPsych = (function() {
 
                   `<div class='parent' style='height: 550px'>
                     <p>For example, if you miss the tile after achieving a streak of 3,<br>you'll see a message like this one indicating that you earned 30 tokens.</p>                
-                    <div class="token-image" style="top:60%"><img src="./img/coins.jpg" height="350px"></div>
-                    <div class="header-win" style="top:20%; color:${hex}">Final Streak: 3</div>
                     <div class="token-text-win" style="top:60%; color:${hex}">+30 Tokens</div>
                   </div>`,
 
@@ -1563,8 +1571,8 @@ const dmPsych = (function() {
 
       if (gameType == '1inN') {
         if (round == 1) {
-          const fasterOrSlower = (pM == .16) ? "you'll have to respond faster than you did" : "you won't have to respond as fast as you did";
-          const speed = (pM == .16) ? "less" : "more";
+          const fasterOrSlower = (pM == .1) ? "you'll have to respond faster than you did" : "you won't have to respond as fast as you did";
+          const speed = (pM == .1) ? "less" : "more";
           html = [`<div class='parent'>
                     <p>Practice is now complete.</p>
                     <p>Now that you have a feel for the ${gameName_1}, you'll learn how to earn tokens.</p>
@@ -1576,17 +1584,42 @@ const dmPsych = (function() {
                   </div>`,
 
                   `<div class='parent' style='height: 550px'>
-                    <p>If you win a round, you'll see a message like this one indicating that you earned 10 tokens.</p>                
-                    <div class="token-image" style="top:60%"><img src="./img/coins.jpg" height="350px"></div>
-                    <div class="header-win" style="top:20%; color:${hex}">You won!</div>
-                    <div class="token-text-win" style="top:60%; color:${hex}">+10 Tokens</div>
+                    <p>If you lose a round, you'll see this message indicating that you earned 0 tokens.</p>
+                    <div class="token-text-lose">+0 Tokens</div>
                   </div>`,
 
                   `<div class='parent' style='height: 550px'>
-                    <p>If you lose a round, you'll see a message like this one indicating that you earned 0 tokens.</p>
-                    <div class="token-image" style="top:60%"><img src="./img/no-coins.jpg" height="350px"></div>
-                    <div class="header-lose" style="top:20%">You lost</div>
-                    <div class="token-text-lose" style="top:60%">+0 Tokens</div>
+                    <p>If you win a round, you'll see this message indicating that you earned 10 tokens.</p>                
+                    <div class="token-text-win" style="color:${hex}">+10 Tokens</div>
+                  </div>`,
+
+                  `<div class='parent'>
+                    <p>In addition to earning tokens through your performance,<br>you can randomly gain (or lose) tokens at the end of each round.</p>
+                    <p>Regardless of whether you win or lose, at the end of each round,<br>you have a 20% chance of gaining 5 extra tokens, and a 20% chance of losing 5 tokens.</p>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you lose a round and win 5 extra tokens, you'll this message:</p>
+                    <div class="token-text-lose">+0 Tokens</div>
+                    <div class="bonus-text">+5 Bonus</div>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you lose a round and lose 5 tokens, you'll this message:</p>
+                    <div class="token-text-lose">+0 Tokens</div>
+                    <div class="penalty-text">-5 Loss</div>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you win a round and win 5 extra tokens, you'll this message:</p>
+                    <div class="token-text-win" style="color:${hex}">+10 Tokens</div>
+                    <div class="bonus-text">+5 Bonus</div>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you win a round and lose 5 tokens, you'll this message:</p>
+                    <div class="token-text-win" style="color:${hex}">+10 Tokens</div>
+                    <div class="penalty-text">-5 Loss</div>
                   </div>`,
 
                  `<div class='parent'>
@@ -1599,50 +1632,73 @@ const dmPsych = (function() {
                     <p>In each round of the ${gameName_2}, you'll have ${roundLength} chances to activate the grey tile.</p>
                     <p>Accordingly, your goal in the ${gameName_2} is not to activate each and every tile.<br>
                     Instead, your goal is to win each round by activating the tile before your ${roundLength} chances are up.</p>
-                    <p>You'll still receive 10 tokens for each round you win, and you'll still receive 0 tokens for each round you lose.</p>
                   </div>`];          
         };
       };
 
       if (gameType == 'bern') {
-        const fasterOrSlower = (pM == .16) ? "you'll have to respond faster than you did" : "you won't have to respond as fast as you did";
-        const speed = (pM == .16) ? "less" : "more";
+        const fasterOrSlower = (pM == .1) ? "you'll have to respond faster than you did" : "you won't have to respond as fast as you did";
+        const speed = (pM == .1) ? "less" : "more";
         if (round == 1) {
           html = [`<div class='parent'>
-                  <p>Practice is now complete.</p>
-                  <p>Now that you have a feel for the ${gameName_1}, you'll learn how to earn tokens.</p>
-                </div>`,
+                    <p>Practice is now complete.</p>
+                    <p>Now that you have a feel for the ${gameName_1}, you'll learn how to earn tokens.</p>
+                  </div>`,
 
-                `<div class='parent'>
-                  <p>In the ${gameName_1}, players earn 10 tokens for every round they win.</p>
-                  <p>Players earn 0 tokens for every round they lose.</p>
-                </div>`,
+                  `<div class='parent'>
+                    <p>In the ${gameName_1}, players earn 10 tokens for every round they win.</p>
+                    <p>Players earn 0 tokens for every round they lose.</p>
+                  </div>`,
 
-                `<div class='parent' style='height: 550px'>
-                  <p>If you win a round, you'll see a message like this one indicating that you earned 10 tokens.</p>                
-                  <div class="token-image" style="top:60%"><img src="./img/coins.jpg" height="350px"></div>
-                  <div class="header-win" style="top:20%; color:${hex}">You won!</div>
-                  <div class="token-text-win" style="top:60%; color:${hex}">+10 Tokens</div>
-                </div>`,
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you win a round, you'll see a message like this one indicating that you earned 10 tokens.</p>                
+                    <div class="token-text-win" style="color:${hex}">+10 Tokens</div>
+                  </div>`,
 
-                `<div class='parent' style='height: 550px'>
-                  <p>If you lose a round, you'll see a message like this one indicating that you earned 0 tokens.</p>
-                  <div class="token-image" style="top:60%"><img src="./img/no-coins.jpg" height="350px"></div>
-                  <div class="header-lose" style="top:20%">You lost</div>
-                  <div class="token-text-lose" style="top:60%">+0 Tokens</div>
-                </div>`,
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you lose a round, you'll see a message like this one indicating that you earned 0 tokens.</p>
+                    <div class="token-text-lose">+0 Tokens</div>
+                  </div>`,
 
-               `<div class='parent'>
-                    <p>In the full version of the ${gameName_1}, you'll have <b>${speed} time</b> to activate the tile compared to the practice session.</p>
-                    <p>Accordingly, ${fasterOrSlower} during practice.</p>
-                </div>`];
+                  `<div class='parent'>
+                    <p>In addition to earning tokens through your performance,<br>you can randomly gain (or lose) tokens at the end of each round.</p>
+                    <p>Regardless of whether you win or lose, at the end of each round,<br>you have a 20% chance of gaining 5 extra tokens, and a 20% chance of losing 5 tokens.</p>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you lose a round and win 5 extra tokens, you'll this message:</p>
+                    <div class="token-text-lose">+0 Tokens</div>
+                    <div class="bonus-text">+5 Bonus</div>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you lose a round and lose 5 tokens, you'll this message:</p>
+                    <div class="token-text-lose">+0 Tokens</div>
+                    <div class="penalty-text">-5 Loss</div>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you win a round and win 5 extra tokens, you'll this message:</p>
+                    <div class="token-text-win" style="color:${hex}">+10 Tokens</div>
+                    <div class="bonus-text">+5 Bonus</div>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you win a round and lose 5 tokens, you'll this message:</p>
+                    <div class="token-text-win" style="color:${hex}">+10 Tokens</div>
+                    <div class="penalty-text">-5 Loss</div>
+                  </div>`,
+
+                 `<div class='parent'>
+                      <p>In the full version of the ${gameName_1}, you'll have <b>${speed} time</b> to activate the tile compared to the practice session.</p>
+                      <p>Accordingly, ${fasterOrSlower} during practice.</p>
+                  </div>`];
         } else if (round == 2) {
           html = [`<div class='parent' style='text-align: left'>
                     <p>The ${gameName_2} is identical to the ${gameName_1} with one exception:</p>
                     <p>You'll no longer have ${roundLength} chances to activate the tile per round.<br>
                     Instead, you'll have just one chance per round to activate the tile.</p>
                     <p>Accordingly, in the ${gameName_2}, your goal is to activate each and every tile you see.</p>
-                    <p>You'll still receive 10 tokens for each round you win, and you'll still receive 0 tokens for each round you lose.</p>
                   </div>`];
         };
       };  
