@@ -449,7 +449,6 @@ const dmPsych = (function() {
         !tooSlow ? data.jackpot = true : data.jackpot = false;      
         data.totalTokens = totalTokens;
         data.trial = trialNumber;
-        console.log(data.totalTokens);
       },
     };
 
