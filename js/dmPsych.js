@@ -1598,7 +1598,7 @@ const dmPsych = (function() {
 
                   `<div class='parent'>
                     <p>In addition to earning tokens through your performance,<br>you can randomly gain (or lose) tokens at the end of each round.</p>
-                    <p>Regardless of whether you win or lose, at the end of each round,<br>you have a 20% chance of gaining 5 extra tokens, and a 20% chance of losing 5 tokens.</p>
+                    <p>Specifically, at the end of each round,<br>you have a 20% chance of gaining 5 extra tokens, and a 20% chance of losing 5 tokens.</p>
                   </div>`,
 
                   `<div class='parent' style='height: 550px'>
@@ -1665,7 +1665,7 @@ const dmPsych = (function() {
 
                   `<div class='parent'>
                     <p>In addition to earning tokens through your performance,<br>you can randomly gain (or lose) tokens at the end of each round.</p>
-                    <p>Regardless of whether you win or lose, at the end of each round,<br>you have a 20% chance of gaining 5 extra tokens, and a 20% chance of losing 5 tokens.</p>
+                    <p>Specifically, at the end of each round,<br>you have a 20% chance of gaining 5 extra tokens, and a 20% chance of losing 5 tokens.</p>
                   </div>`,
 
                   `<div class='parent' style='height: 550px'>
