@@ -267,7 +267,7 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {phase: 'iti', block: blockName, round: roundNum},
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
+        const header = (gameType == "strk") ? `Current Streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
         return iti_html.replace("{header}", header);
       },
       choices: [" "],
@@ -287,7 +287,7 @@ const dmPsych = (function() {
       data: {phase: 'warning', block: blockName, round: roundNum},
       choices: "NO_KEYS",
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
+        const header = (gameType == "strk") ? `Current Streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
         const message = warning_html.replace("{header}", header);
         return (tooFast) ? message : '';
       },
@@ -307,7 +307,7 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {phase: 'probe', block: blockName, round: roundNum},
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
+        const header = (gameType == "strk") ? `Current Streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
         return probe_html.replace("{header}", header);
       },
       choices: [" "],
@@ -326,7 +326,7 @@ const dmPsych = (function() {
       type: jsPsychHtmlKeyboardResponse,
       data: {phase: `activation`, block: blockName, round: roundNum},
       stimulus: () => {
-        const header = (gameType == "strk") ? `Current streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
+        const header = (gameType == "strk") ? `Current Streak: ${streak}` : (gameType == "1inN") ? `Attempts remaining: ${6 - losses}` : "Win the round!";
         if (!tooSlow) {
           return tileHit.replace("{header}", header);
         } else {
@@ -424,12 +424,17 @@ const dmPsych = (function() {
         if (gameType == 'strk') {
           if (tooSlow && streak > 0) {
             let finalStreak = streak;
+            let feedbackType = lossArray.pop();
             streak = 0;
-            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? tokens_bonus_html : tokens_html;
-            message = message.replace("{strk-feedback}", `+${finalStreak * 10} Tokens`); 
+            message = (feedbackType == "plus" && blockName !== "practice") ? tokens_bonus_html : (feedbackType == "minus" && blockName !== "practice") ? tokens_loss_html : tokens_html;
+            message = (blockName !== "practice") ? message.replace("{strk-feedback}", `+${finalStreak * 10} Tokens`) : message.replace("{strk-feedback}", `Final Streak: ${finalStreak}`); 
           } else if (tooSlow && streak == 0) {
-            message = (bonus[trialNumber] == "bonus" && blockName !== "practice") ? noTokens_bonus_html : noTokens_html;
-            message = message.replace("{strk-feedback}", `+0 Tokens`); 
+            let feedbackType = lossArray.pop();
+            message = (feedbackType == "plus" && blockName !== "practice") ? noTokens_bonus_html : (feedbackType == "minus" && blockName !== "practice") ? noTokens_loss_html : noTokens_html;
+            message = (blockName !== "practice") ? message.replace("{strk-feedback}", `+0 Tokens`) : message.replace("{strk-feedback}", `Final Streak: 0`); 
+            if (lossArray.length == 0) {
+              lossArray = makeFeedbackArray();
+            };
           } else {
             streak++;
             message = iti_html.replace("{header}", `Current Streak: ${streak}`);
@@ -1522,15 +1527,42 @@ const dmPsych = (function() {
                   </div>`,
 
                   `<div class='parent' style='height: 550px'>
-                    <p>For example, if you miss the tile after achieving a streak of 3,<br>you'll see a message like this one indicating that you earned 30 tokens.</p>                
-                    <div class="token-text-win" style="top:60%; color:${hex}">+30 Tokens</div>
+                    <p>For example, if you miss the tile after achieving a streak of 3,<br>you'll see this message indicating that you earned 30 tokens.</p>                
+                    <div class="token-text-win" style="color:${hex}">+30 Tokens</div>
                   </div>`,
 
                   `<div class='parent' style='height: 550px'>
-                    <p>If you miss the tile after failing to start a streak, you'll see a message like this one indicating that you earned 0 tokens.</p>
-                    <div class="token-image" style="top:60%"><img src="./img/no-coins.jpg" height="350px"></div>
-                    <div class="header-lose" style="top:20%">Final Streak: 0</div>
-                    <div class="token-text-lose" style="top:60%">+0 Tokens</div>
+                    <p>If you miss the tile after failing to start a streak,<br>you'll see this message indicating that you earned 0 tokens.</p>
+                    <div class="token-text-lose">+0 Tokens</div>
+                  </div>`,
+
+                  `<div class='parent'>
+                    <p>In addition to earning tokens through your performance, you can randomly gain or lose tokens randomly.</p>
+                    <p>Specifically, at the end of each streak, you have a 20% chance of gaining 5 extra tokens, and a 20% chance of losing 5 tokens.</p>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you randomly win 5 extra tokens after breaking a steak of 3, you'll this message:</p>
+                    <div class="token-text-win" style="color:${hex}">+30 Tokens</div>
+                    <div class="bonus-text">+5 Bonus</div>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you randomly lose 5 tokens after breaking a steak of 3, you'll this message:</p>
+                    <div class="token-text-win" style="color:${hex}">+30 Tokens</div>
+                    <div class="penalty-text">-5 Loss</div>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you randomly win 5 extra tokens after failing to start a streak, you'll this message:</p>
+                    <div class="token-text-lose">+0 Tokens</div>
+                    <div class="bonus-text">+5 Bonus</div>
+                  </div>`,
+
+                  `<div class='parent' style='height: 550px'>
+                    <p>If you randomly lose 5 tokens after failing to start a streak, you'll this message:</p>
+                    <div class="token-text-lose">+0 Tokens</div>
+                    <div class="penalty-text">-5 Loss</div>
                   </div>`,
 
                   `<div class='parent'>

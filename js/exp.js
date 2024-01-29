@@ -8,7 +8,7 @@ var exp = (function() {
     const settings = {
         pM: [.1, .9][Math.floor(Math.random()*2)],
         pM_practice: .5,
-        gameType: [['bern', '1inN'], ['1inN', 'bern']][Math.floor(Math.random()*2)],
+        gameType: [['strk', 'strk'], ['strk', 'strk']][Math.floor(Math.random()*2)],
         nTrials: 50,
         basePay: 2.40,
         roundLength: 6,
@@ -72,8 +72,8 @@ var exp = (function() {
         if (gameType == 'strk') {
             // attention check #1
             a1 = 'Activate each and every tile.';
-            a2 = 'You will receive 10 tokens, increasing your odds of winning a $100.00 bonus prize.';
-            a3 = (pM == .5) ? '50% of their rounds.' : '15% of their rounds.';
+            a2 = 'You will receive tokens, increasing your odds of winning a $100.00 bonus prize.';
+            a3 = (pM == .1) ? 'Less time to activate the tile.' : 'More time to activate the tile.';
         };
 
         if (gameType == '1inN') {
