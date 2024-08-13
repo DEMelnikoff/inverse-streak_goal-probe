@@ -8,7 +8,7 @@ var exp = (function() {
     const settings = {
         pM: [.1, .9][Math.floor(Math.random()*2)],
         pM_practice: .5,
-        gameType: [['strk', 'strk'], ['strk', 'strk']][Math.floor(Math.random()*2)],
+        gameType: [['bern', '1inN'], ['1inN', 'bern']][Math.floor(Math.random()*2)],
         nTrials: 50,
         basePay: 2.40,
         roundLength: 6,
